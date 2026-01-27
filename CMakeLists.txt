@@ -7,7 +7,7 @@ set(OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin)
 project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
-src/main.cpp
+    src/main.cpp
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
@@ -21,3 +21,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 add_subdirectory(ext/q3d)
 
 target_link_libraries(${PROJECT_NAME} q3d)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res
+)
