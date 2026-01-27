@@ -1,0 +1,3 @@
+[submodule "ext/q3d"]
+	path = ext/q3d
+	url = https://github.com/MalyshevMS/q3d
