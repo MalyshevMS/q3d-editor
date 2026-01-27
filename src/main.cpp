@@ -1,6 +1,6 @@
-#include <print>
+#include <q3d/window/window.hpp>
 
 int main(int argc, char const *argv[]) {
-    std::println("Hello, World!");
+    test();
     return 0;
 }
