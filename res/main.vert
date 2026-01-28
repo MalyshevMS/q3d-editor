@@ -1,13 +1,16 @@
 #version 330 core
 
-layout (location = 0) in vec3 input_position;
-layout (location = 1) in vec3 input_color;
+layout (location = 0) in vec3 aPosition;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aUV;
 
 uniform float u_scale;
 
-out vec3 color;
+out vec3 vColor;
+out vec2 vUV;
 
 void main() {
-    gl_Position = vec4(input_position.x * u_scale, input_position.y, input_position.z, 1.0);
-    color = input_color;
+    gl_Position = vec4(aPosition.x * u_scale, aPosition.y, aPosition.z, 1.0);
+    vColor = aColor;
+    vUV = aUV;
 }
