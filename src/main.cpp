@@ -3,9 +3,11 @@
 #include <q3d/res/resources.hpp>
 #include <q3d/gl/shader.hpp>
 #include <q3d/gl/vao.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <q3d/res/stb_image.h>
+#include <q3d/gl/texture.hpp>
+#include <q3d/gl/gl.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 int main(int argc, char const *argv[]) {
     q3d::Window window {"q3d editor", {800, 600}};
@@ -24,37 +26,11 @@ int main(int argc, char const *argv[]) {
         2, 3, 0,
     };
 
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_set_flip_vertically_on_load(true);
-
-    int width, height, channels;
-    unsigned char* data = stbi_load(
-        (res->getExePath() + "res/texture.png").c_str(),
-        &width, &height, &channels,
-        0
-    );
-
-    if (!data) return -1;
-
-    GLenum fmt = GL_RGB;
-    if (channels == 4) fmt = GL_RGBA;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, fmt, width, height, 0, fmt, GL_UNSIGNED_BYTE, data);
-
-    stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0);
+    auto texture = *res->loadTexture("texture", "res/texture.png");
 
     // Scope for the variables, that must be destroyed before OpenGL Context closed // TODO: Encapsulate
     {
-        float scale = 1.f;
+        float angle = 0.f;
         q3d::gl::Vao vao;
 
         q3d::gl::buffer::Layout l_xyz_rgb_uv = {
@@ -74,17 +50,30 @@ int main(int argc, char const *argv[]) {
         shader.attach(res->readFile("res/main.frag"), q3d::gl::Shader::Type::Fragment);
         shader.link();
 
-        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glm::mat4 model = glm::mat4(1.f); // Order: T,R,S
+        glm::mat4 view = glm::mat4(1.f);
+        glm::mat4 proj = glm::mat4(1.f);
+
+        q3d::gl::clearColor(q3d::Color::Cyan);
         while (window.isOpen()) {
-            glClear(GL_COLOR_BUFFER_BIT);
+            // CPU (math)
+
+            const float dt = window.getDeltaTime();
+            const float speed = 360.f;
+
+            proj[0][0] = window.getInversedAspectRatio();
+            model = glm::rotate(glm::mat4(1.f), glm::radians(angle), glm::vec3(0.f, 0.f, 1.f));
+            angle += speed * dt;
+            if (angle >= 360.f) angle = 0.f;
+
+            // GPU
+
+            q3d::gl::clear();
             shader.use();
+            
+            shader.uniform("u_mvp", proj * view * model);
 
-            shader.uniform("u_scale", scale);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            shader.uniform("u_texture", 0);
-
+            texture.use(shader);
             vao.draw();
             
             shader.unuse();
