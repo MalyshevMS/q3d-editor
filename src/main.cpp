@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <q3d/window/window.hpp>
+#include <q3d/system/camera.hpp>
 #include <q3d/res/resources.hpp>
 #include <q3d/gl/shader.hpp>
 #include <q3d/gl/vao.hpp>
@@ -12,6 +13,7 @@
 int main(int argc, char const *argv[]) {
     q3d::Window window {"q3d editor", {800, 600}};
     auto res = q3d::Resources::getInstance(argv[0]);
+    q3d::Camera cam(window.getAspectRatio(), 90.f);
 
     const GLfloat verticies[] = {
     //   X      Y      Z            R      G      B         U    V
@@ -51,29 +53,59 @@ int main(int argc, char const *argv[]) {
         shader.link();
 
         glm::mat4 model = glm::mat4(1.f); // Order: T,R,S
-        glm::mat4 view = glm::mat4(1.f);
-        glm::mat4 proj = glm::mat4(1.f);
 
         q3d::gl::clearColor(q3d::Color::Cyan);
         while (window.isOpen()) {
             // CPU (math)
 
             const float dt = window.getDeltaTime();
+            const glm::vec2 dm = window.getDeltaMouse();
             const float speed = 360.f;
+            const float cameraSpeed = 10.f;
+            const float sensetivity = 5.f;
+            float cameraMove = cameraSpeed * dt;
+            glm::vec3 cameraMoveDelta = glm::vec3(0.f);
+            glm::vec3 cameraRotateDelta = glm::vec3(0.f);
 
-            proj[0][0] = window.getInversedAspectRatio();
+            model = glm::translate(model, glm::vec3(0.f, -1.f, 0.f));
             model = glm::rotate(glm::mat4(1.f), glm::radians(angle), glm::vec3(0.f, 0.f, 1.f));
             angle += speed * dt;
             if (angle >= 360.f) angle = 0.f;
+
+            if (window.isKeyPressed('W')) {
+                cameraMoveDelta.z += cameraMove;
+            }
+            if (window.isKeyPressed('S')) {
+                cameraMoveDelta.z -= cameraMove;
+            }
+            if (window.isKeyPressed('D')) {
+                cameraMoveDelta.x += cameraMove;
+            }
+            if (window.isKeyPressed('A')) {
+                cameraMoveDelta.x -= cameraMove;
+            }
+            if (window.isKeyPressed('Q')) {
+                cameraMoveDelta.y -= cameraMove;
+            }
+            if (window.isKeyPressed('E')) {
+                cameraMoveDelta.y += cameraMove;
+            }
+
+            if (window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+                window.hideCursor();
+                cameraRotateDelta.x -= dm.y * sensetivity * dt;
+                cameraRotateDelta.y -= dm.x * sensetivity * dt;
+            } else window.showCursor();
+
+            cam.moveRotate(cameraMoveDelta, cameraRotateDelta);
 
             // GPU
 
             q3d::gl::clear();
             shader.use();
             
-            shader.uniform("u_mvp", proj * view * model);
-
             texture.use(shader);
+            shader.uniform("u_mvp", cam.getMatrix() * model);
             vao.draw();
             
             shader.unuse();
