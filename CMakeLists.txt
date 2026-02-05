@@ -8,6 +8,8 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/app.hpp
+    src/app.cpp
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
