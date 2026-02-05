@@ -13,9 +13,9 @@ void Application::run() {
     const GLfloat verticies[] = {
     //   X      Y      Z            R      G      B         U    V
        -0.5f, -0.5f,  0.0f,        1.f,   0.f,   0.f,      0.f, 0.f,
-        0.5f, -0.5f,  0.0f,        0.f,   1.f,   0.f,      1.f, 0.f,
-        0.5f,  0.5f,  0.0f,        0.f,   0.f,   1.f,      1.f, 1.f,
-       -0.5f,  0.5f,  0.0f,        1.f,   0.f,   1.f,      0.f, 1.f,
+        0.5f, -0.5f,  0.0f,        0.f,   1.f,   0.f,      2.f, 0.f,
+        0.5f,  0.5f,  0.0f,        0.f,   0.f,   1.f,      2.f, 2.f,
+       -0.5f,  0.5f,  0.0f,        1.f,   0.f,   1.f,      0.f, 2.f,
     };
 
     const GLuint ind[] = {
@@ -23,11 +23,11 @@ void Application::run() {
         2, 3, 0,
     };
 
-    auto texture = *res->loadTexture("tex1", "res/texture.png");
-
     // Scope for the variables, that must be destroyed before OpenGL Context closed
     {
-        q3d::gl::Vao vao;
+        auto texture = *res->loadTexture("tex1", "res/texture.png");
+
+        texture.setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
 
         q3d::gl::buffer::Layout l_xyz_rgb_uv = {
             q3d::gl::buffer::DataType::float3,
@@ -35,8 +35,9 @@ void Application::run() {
             q3d::gl::buffer::DataType::float2,
         };
 
+        q3d::gl::Vao vao;
         q3d::gl::Vbo vbo(verticies, sizeof(verticies), l_xyz_rgb_uv);
-        q3d::gl::Ibo ibo(ind, sizeof(ind) / sizeof(GLuint));
+        q3d::gl::Ibo ibo(ind, 6);
 
         vao.addVbo(vbo);
         vao.setIbo(ibo);
@@ -85,10 +86,10 @@ void Application::run() {
             if (window.isKeyPressed(q3d::key::E)) {
                 cameraMoveDelta.y += cameraMove;
             }
-            if (window.isKeyPressed(q3d::key::F)) {
+            if (window.isKeyPressed(q3d::key::X)) {
                 model = glm::scale(model, glm::vec3(1.1f));
             }
-            if (window.isKeyPressed(q3d::key::G)) {
+            if (window.isKeyPressed(q3d::key::Z)) {
                 model = glm::scale(model, glm::vec3(0.9f));
             }
 
