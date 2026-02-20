@@ -53,7 +53,7 @@ void Application::run() {
         model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 0.f, 1.f));
         model = glm::scale(model, glm::vec3(1.f));
 
-        q3d::gl::clearColor(q3d::Color::Cyan);
+        q3d::gl::clearColor(q3d::core::Color::Cyan);
         while (window.isOpen()) {
             // CPU (math)
 
