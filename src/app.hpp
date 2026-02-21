@@ -14,4 +14,5 @@ public:
     Application(std::string_view argv0);
 
     void run();
+    ~Application();
 };

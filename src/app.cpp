@@ -12,65 +12,65 @@ Application::Application(std::string_view argv0)
 }
 
 void Application::run() {
+    auto texture = res->loadTexture("tex1", "res/texture.png");
+    texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
+    texture->uv = glm::vec2(2, 2);
 
-    // Scope for the variables, that must be destroyed before OpenGL Context closed
-    {
-        auto texture = res->loadTexture("tex1", "res/texture.png");
-        texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
-        texture->uv = glm::vec2(2, 2);
+    auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
-        auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
+    q3d::q2d::Plane plane(shader, {}, texture);
 
-        q3d::q2d::Plane plane(shader, {}, texture);
+    cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
 
-        cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
+    q3d::gl::clearColor(q3d::core::Color::Cyan);
+    while (window.isOpen()) {
+        // CPU (math)
 
-        q3d::gl::clearColor(q3d::core::Color::Cyan);
-        while (window.isOpen()) {
-            // CPU (math)
+        const auto dt = window.getDeltaTime();
+        const auto dm = window.getDeltaMouse();
+        const float cameraMove = cfg::cameraSpeed * dt;
+        auto cameraMoveDelta = glm::vec3(0.f);
+        auto cameraRotateDelta = glm::vec3(0.f);
 
-            const auto dt = window.getDeltaTime();
-            const auto dm = window.getDeltaMouse();
-            const float cameraMove = cfg::cameraSpeed * dt;
-            auto cameraMoveDelta = glm::vec3(0.f);
-            auto cameraRotateDelta = glm::vec3(0.f);
+        plane.transform.rotation.z += cfg::rotSpeed * dt;
 
-            plane.transform.rotation.z += cfg::rotSpeed * dt;
-
-            if (window.isKeyPressed(q3d::key::W)) {
-                cameraMoveDelta.z += cameraMove;
-            }
-            if (window.isKeyPressed(q3d::key::S)) {
-                cameraMoveDelta.z -= cameraMove;
-            }
-            if (window.isKeyPressed(q3d::key::D)) {
-                cameraMoveDelta.x += cameraMove;
-            }
-            if (window.isKeyPressed(q3d::key::A)) {
-                cameraMoveDelta.x -= cameraMove;
-            }
-            if (window.isKeyPressed(q3d::key::Q)) {
-                cameraMoveDelta.y -= cameraMove;
-            }
-            if (window.isKeyPressed(q3d::key::E)) {
-                cameraMoveDelta.y += cameraMove;
-            }
-
-            if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
-                window.hideCursor();
-                cameraRotateDelta.x -= dm.y * cfg::cameraSensetivity * dt;
-                cameraRotateDelta.y -= dm.x * cfg::cameraSensetivity * dt;
-            } else window.showCursor();
-
-            cam.moveRotate(cameraMoveDelta, cameraRotateDelta);
-
-            // GPU
- 
-            q3d::gl::clear();
-            
-            plane.draw();
-
-            window.update();
+        if (window.isKeyPressed(q3d::key::W)) {
+            cameraMoveDelta.z += cameraMove;
         }
-    } q3d::Window::terminate();
+        if (window.isKeyPressed(q3d::key::S)) {
+            cameraMoveDelta.z -= cameraMove;
+        }
+        if (window.isKeyPressed(q3d::key::D)) {
+            cameraMoveDelta.x += cameraMove;
+        }
+        if (window.isKeyPressed(q3d::key::A)) {
+            cameraMoveDelta.x -= cameraMove;
+        }
+        if (window.isKeyPressed(q3d::key::Q)) {
+            cameraMoveDelta.y -= cameraMove;
+        }
+        if (window.isKeyPressed(q3d::key::E)) {
+            cameraMoveDelta.y += cameraMove;
+        }
+
+        if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
+            window.hideCursor();
+            cameraRotateDelta.x -= dm.y * cfg::cameraSensetivity * dt;
+            cameraRotateDelta.y -= dm.x * cfg::cameraSensetivity * dt;
+        } else window.showCursor();
+
+        cam.moveRotate(cameraMoveDelta, cameraRotateDelta);
+
+        // GPU
+
+        q3d::gl::clear();
+        
+        plane.draw();
+
+        window.update();
+    }
+}
+
+Application::~Application() {
+    q3d::Window::terminate();
 }
