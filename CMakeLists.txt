@@ -20,6 +20,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+set(Q3D_STATIC OFF)
 add_subdirectory(ext/q3d)
 
 target_link_libraries(${PROJECT_NAME} q3d)
