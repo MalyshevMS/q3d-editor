@@ -1,57 +1,34 @@
 #include "app.hpp"
 #include <q3d/gl/gl.hpp>
 #include <q3d/gl/vao.hpp>
+#include <q3d/core/active_camera.hpp>
+#include <q3d/2d/plane.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 Application::Application(std::string_view argv0)
  : window("q3d editor", { 1280, 720 }), cam(window.getAspectRatio(), 90.f), res(nullptr) {
     res = q3d::Resources::getInstance(argv0);
+    q3d::core::ActiveCamera::getInstance(std::shared_ptr<q3d::core::Camera>(&cam));
 }
 
 void Application::run() {
-    const GLfloat verticies[] = {
-    //   X      Y      Z            R      G      B         U    V
-       -0.5f, -0.5f,  0.0f,        1.f,   0.f,   0.f,      0.f, 0.f,
-        0.5f, -0.5f,  0.0f,        0.f,   1.f,   0.f,      2.f, 0.f,
-        0.5f,  0.5f,  0.0f,        0.f,   0.f,   1.f,      2.f, 2.f,
-       -0.5f,  0.5f,  0.0f,        1.f,   0.f,   1.f,      0.f, 2.f,
-    };
-
-    const GLuint ind[] = {
-        0, 1, 2,
-        2, 3, 0,
-    };
 
     // Scope for the variables, that must be destroyed before OpenGL Context closed
     {
-        auto texture = *res->loadTexture("tex1", "res/texture.png");
+        auto texture = res->loadTexture("tex1", "res/texture.png");
 
-        texture.setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
+        texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
+        texture->uv = glm::vec2(2, 2);
 
-        q3d::gl::buffer::Layout l_xyz_rgb_uv = {
-            q3d::gl::buffer::DataType::float3,
-            q3d::gl::buffer::DataType::float3,
-            q3d::gl::buffer::DataType::float2,
-        };
+        auto shader = std::make_shared<q3d::gl::Shader>();
+        shader->attach(res->readFile("res/main.vert"), q3d::gl::Shader::Type::Vertex);
+        shader->attach(res->readFile("res/main.frag"), q3d::gl::Shader::Type::Fragment);
+        shader->link();
 
-        q3d::gl::Vao vao;
-        q3d::gl::Vbo vbo(verticies, sizeof(verticies), l_xyz_rgb_uv);
-        q3d::gl::Ibo ibo(ind, 6);
+        q3d::q2d::Plane plane(shader, {}, texture);
 
-        vao.addVbo(vbo);
-        vao.setIbo(ibo);
-
-        q3d::gl::Shader shader;
-        shader.attach(res->readFile("res/main.vert"), q3d::gl::Shader::Type::Vertex);
-        shader.attach(res->readFile("res/main.frag"), q3d::gl::Shader::Type::Fragment);
-        shader.link();
-
-        glm::mat4 model = glm::mat4(1.f); // Order: T,R,S
-
-        model = glm::translate(model, glm::vec3(0.f, 0.f, -1.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 0.f, 1.f));
-        model = glm::scale(model, glm::vec3(1.f));
+        cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
 
         q3d::gl::clearColor(q3d::core::Color::Cyan);
         while (window.isOpen()) {
@@ -59,14 +36,11 @@ void Application::run() {
 
             const float dt = window.getDeltaTime();
             const glm::vec2 dm = window.getDeltaMouse();
-            const float speed = 360.f;
             const float cameraSpeed = 10.f;
             const float sensetivity = 5.f;
             const float cameraMove = cameraSpeed * dt;
             glm::vec3 cameraMoveDelta = glm::vec3(0.f);
             glm::vec3 cameraRotateDelta = glm::vec3(0.f);
-
-            model = glm::rotate(model, glm::radians(speed * dt), glm::vec3(0.f, 0.f, 1.f));
 
             if (window.isKeyPressed(q3d::key::W)) {
                 cameraMoveDelta.z += cameraMove;
@@ -86,12 +60,6 @@ void Application::run() {
             if (window.isKeyPressed(q3d::key::E)) {
                 cameraMoveDelta.y += cameraMove;
             }
-            if (window.isKeyPressed(q3d::key::X)) {
-                model = glm::scale(model, glm::vec3(1.1f));
-            }
-            if (window.isKeyPressed(q3d::key::Z)) {
-                model = glm::scale(model, glm::vec3(0.9f));
-            }
 
             if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
                 window.hideCursor();
@@ -102,15 +70,11 @@ void Application::run() {
             cam.moveRotate(cameraMoveDelta, cameraRotateDelta);
 
             // GPU
-
+// 
             q3d::gl::clear();
-            shader.use();
             
-            texture.use(shader);
-            shader.uniform("u_mvp", cam.getMatrix() * model);
-            vao.draw();
-            
-            shader.unuse();
+            plane.draw();
+
             window.update();
         }
     } q3d::Window::terminate();
