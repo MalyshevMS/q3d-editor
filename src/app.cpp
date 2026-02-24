@@ -4,31 +4,39 @@
 #include <q3d/core/active_camera.hpp>
 #include <q3d/obj/2d/plane.hpp>
 #include <q3d/obj/3d/box.hpp>
+#include <q3d/obj/3d/model.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
 
 Application::Application(std::string_view argv0)
- : window("q3d editor", { 1280, 720 }), cam(window.getAspectRatio(), 90.f), res(nullptr) {
+ : window("q3d editor", { 854, 480 }), cam(window.getAspectRatio(), 90.f), res(nullptr) {
     res = q3d::Resources::getInstance(argv0);
     q3d::core::ActiveCamera::getInstance(q3d::ptr<q3d::core::Camera>(&cam));
 }
 
 void Application::run() {
-    auto texture = res->loadTexture("tex1", "res/texture.png");
+    auto texture = res->loadTexture("texture", "res/sticker.png");
     texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
-    texture->uv = glm::vec2(1, 1);
+
+    auto grass = res->loadTexture("grass", "res/grass.png");
 
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
     q3d::object::Plane plane(shader, {}, texture);
     q3d::object::Box box(shader, {}, texture);
+    auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
 
     box.transform.position.z = -5.f;
+    box.transform.scale_fac.x = 2.f;
+
+    customModel->transform.position.x = 6.f;
 
     cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
 
     q3d::gl::clearColor(q3d::core::Color::Cyan);
     q3d::gl::enable(q3d::gl::feature::depthTest);
+    q3d::gl::enable(q3d::gl::feature::blend);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     while (window.isOpen()) {
         // CPU (math)
 
@@ -37,8 +45,6 @@ void Application::run() {
         const float cameraMove = cfg::cameraSpeed * dt;
         auto cameraMoveDelta = glm::vec3(0.f);
         auto cameraRotateDelta = glm::vec3(0.f);
-
-        plane.transform.rotation.y += cfg::rotSpeed * dt;
 
         if (window.isKeyPressed(q3d::key::W)) {
             cameraMoveDelta.z += cameraMove;
@@ -73,6 +79,7 @@ void Application::run() {
         
         plane.draw();
         box.draw();
+        customModel->draw();
 
         window.update();
     }
