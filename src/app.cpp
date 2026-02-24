@@ -5,6 +5,7 @@
 #include <q3d/obj/2d/plane.hpp>
 #include <q3d/obj/3d/box.hpp>
 #include <q3d/obj/3d/model.hpp>
+#include <q3d/core/scene.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
 
@@ -22,21 +23,25 @@ void Application::run() {
 
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
-    q3d::object::Plane plane(shader, {}, texture);
-    q3d::object::Box box(shader, {}, texture);
+    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
+    auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), texture);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
 
-    box.transform.position.z = -5.f;
-    box.transform.scale_fac.x = 2.f;
-
+    box->transform.position.z = -5.f;
+    box->transform.scale_fac.x = 2.f;
     customModel->transform.position.x = 6.f;
 
     cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
 
+    q3d::core::Scene scene;
+
+    scene.add("plane", plane);
+    scene.add("box", box);
+    scene.add("custom", customModel);
+
     q3d::gl::clearColor(q3d::core::Color::Cyan);
     q3d::gl::enable(q3d::gl::feature::depthTest);
     q3d::gl::enable(q3d::gl::feature::blend);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     while (window.isOpen()) {
         // CPU (math)
 
@@ -77,9 +82,7 @@ void Application::run() {
 
         q3d::gl::clear();
         
-        plane.draw();
-        box.draw();
-        customModel->draw();
+        scene.render();
 
         window.update();
     }
