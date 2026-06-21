@@ -14,6 +14,7 @@
 #include "q3d/core/camera.hpp"
 #include "q3d/core/color.hpp"
 #include "q3d/window/keys.hpp"
+#include "q3d/window/window.hpp"
 
 Application::Application(std::string_view argv0)
  : window("q3d editor", { 854, 480 }), res(nullptr) {
@@ -47,6 +48,11 @@ void Application::run() {
     canvas.add("plane", plane);
     scene.add("box", box);
     scene.add("custom", customModel);
+
+    window.onResize([&](q3d::Window& win, glm::vec2 size){
+        canvas.updateSize(size);
+        cam->setAspect(size.x / size.y);
+    });
 
     q3d::gl::clearColor(q3d::core::Color::Cyan);
     q3d::gl::enable(q3d::gl::feature::depthTest);
