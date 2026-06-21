@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "app.hpp"
+#include <memory>
 #include <q3d/gl/gl.hpp>
 #include <q3d/core/active_camera.hpp>
 #include <q3d/obj/2d/plane.hpp>
@@ -9,11 +10,16 @@
 #include <q3d/ui/canvas.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
+#include "glm/ext/vector_float3.hpp"
+#include "q3d/core/camera.hpp"
+#include "q3d/core/color.hpp"
+#include "q3d/window/keys.hpp"
 
 Application::Application(std::string_view argv0)
- : window("q3d editor", { 854, 480 }), cam(window.getAspectRatio(), 90.f), res(nullptr) {
+ : window("q3d editor", { 854, 480 }), res(nullptr) {
     res = q3d::Resources::getInstance(argv0);
-    q3d::core::ActiveCamera::set(q3d::ptr<q3d::core::Camera>(&cam));
+    cam = std::make_shared<q3d::core::Camera>(window.getAspectRatio(), 90.f);
+    q3d::core::ActiveCamera::set(cam);
 }
 
 void Application::run() {
@@ -24,15 +30,16 @@ void Application::run() {
 
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
-    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), grass);
-    auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), texture);
+    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
+    auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
     customModel->transform.position.x = 6.f;
+    plane->transform.scale_fac = glm::vec3(100.f);
 
-    cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
+    cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
     q3d::core::Scene scene;
     q3d::ui::Canvas canvas(window.getSize());
@@ -71,6 +78,12 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::E)) {
             cameraMoveDelta.y += cameraMove;
         }
+        if (window.isKeyPressed(q3d::key::F)) {
+            plane->transform.scale_fac += glm::vec3(1.f);
+        }
+        if (window.isKeyPressed(q3d::key::G)) {
+            plane->transform.scale_fac -= glm::vec3(1.f);
+        }
 
         if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
             window.hideCursor();
@@ -78,7 +91,13 @@ void Application::run() {
             cameraRotateDelta.y -= dm.x * cfg::cameraSensetivity * dt;
         } else window.showCursor();
 
-        cam.moveRotate(cameraMoveDelta, cameraRotateDelta);
+        if (window.isMouseButtonPressed(q3d::button::LEFT)) {
+            auto m = window.getMousePos();
+            plane->transform.position.x = m.x - window.getSize().x / 2;
+            plane->transform.position.y = -m.y + window.getSize().y / 2;
+        }
+
+        cam->moveRotate(cameraMoveDelta, cameraRotateDelta);
 
         // GPU
 
