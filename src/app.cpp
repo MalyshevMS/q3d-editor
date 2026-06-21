@@ -6,13 +6,14 @@
 #include <q3d/obj/3d/box.hpp>
 #include <q3d/obj/3d/model.hpp>
 #include <q3d/core/scene.hpp>
+#include <q3d/ui/canvas.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
 
 Application::Application(std::string_view argv0)
  : window("q3d editor", { 854, 480 }), cam(window.getAspectRatio(), 90.f), res(nullptr) {
     res = q3d::Resources::getInstance(argv0);
-    q3d::core::ActiveCamera::getInstance(q3d::ptr<q3d::core::Camera>(&cam));
+    q3d::core::ActiveCamera::set(q3d::ptr<q3d::core::Camera>(&cam));
 }
 
 void Application::run() {
@@ -23,7 +24,7 @@ void Application::run() {
 
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
-    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
+    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), grass);
     auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), texture);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
 
@@ -34,8 +35,9 @@ void Application::run() {
     cam.setPosition(glm::vec3(0.f, 0.f, 3.f));
 
     q3d::core::Scene scene;
+    q3d::ui::Canvas canvas(window.getSize());
 
-    scene.add("plane", plane);
+    canvas.add("plane", plane);
     scene.add("box", box);
     scene.add("custom", customModel);
 
@@ -81,8 +83,10 @@ void Application::run() {
         // GPU
 
         q3d::gl::clear();
-        
+
         scene.render();
+
+        canvas.render();
 
         window.update();
     }
