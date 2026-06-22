@@ -8,9 +8,11 @@
 #include <q3d/obj/3d/model.hpp>
 #include <q3d/core/scene.hpp>
 #include <q3d/ui/canvas.hpp>
+#include <q3d/ui/font.hpp>
+#include <q3d/ui/text.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
-#include "glm/ext/vector_float2.hpp"
+#include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <q3d/core/camera.hpp>
 #include <q3d/core/color.hpp>
@@ -32,11 +34,15 @@ void Application::run() {
     auto grass = res->loadTexture("grass", "res/grass.png");
 
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
+    auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
+
+    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Impact.TTF", 16);
 
     auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
-    auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
+    auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(),texture);
     auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
+    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Hello, world!");
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
@@ -46,10 +52,10 @@ void Application::run() {
     plane->transform.position.y = -150.f;
     plane->transform.position.z = 0.f;
 
-    plane2->transform.scale_fac = glm::vec3(50.f);
-    plane2->transform.position.x = 100.f;
-    plane2->transform.position.y = -100.f;
-    plane2->transform.position.z = 1.f;
+    // plane2->transform.scale_fac = glm::vec3(50.f);
+    // plane2->transform.position.x = 100.f;
+    // plane2->transform.position.y = -100.f;
+    // plane2->transform.position.z = 1.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
@@ -57,7 +63,8 @@ void Application::run() {
     q3d::ui::Canvas canvas(window.getSize());
 
     canvas.add("plane", plane);
-    canvas.add("plane2", plane2);
+    canvas.add("text", text);
+    scene.add("plane2", plane2);
     scene.add("box", box);
     scene.add("custom", customModel);
 
@@ -117,8 +124,8 @@ void Application::run() {
 
         if (window.isKeyPressed(q3d::key::X)) {
             auto m = window.getMousePos();
-            plane2->transform.position.x = m.x;
-            plane2->transform.position.y = -m.y;
+            text->transform.position.x = m.x;
+            text->transform.position.y = -m.y;
         }
 
         cam->moveRotate(cameraMoveDelta, cameraRotateDelta);
