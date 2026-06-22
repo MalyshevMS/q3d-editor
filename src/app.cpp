@@ -10,21 +10,23 @@
 #include <q3d/ui/canvas.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
-#include "glm/ext/vector_float3.hpp"
-#include "q3d/core/camera.hpp"
-#include "q3d/core/color.hpp"
-#include "q3d/window/keys.hpp"
-#include "q3d/window/window.hpp"
+#include "glm/ext/vector_float2.hpp"
+#include <glm/ext/vector_float3.hpp>
+#include <q3d/core/camera.hpp>
+#include <q3d/core/color.hpp>
+#include <q3d/log/log.hpp>
+#include <q3d/window/keys.hpp>
+#include <q3d/window/window.hpp>
 
 Application::Application(std::string_view argv0)
- : window("q3d editor", { 854, 480 }), res(nullptr) {
+ : window("q3d editor", { 1280, 720 }), res(nullptr) {
     res = q3d::Resources::getInstance(argv0);
     cam = std::make_shared<q3d::core::Camera>(window.getAspectRatio(), 90.f);
     q3d::core::ActiveCamera::set(cam);
 }
 
 void Application::run() {
-    auto texture = res->loadTexture("texture", "res/sticker.png");
+    auto texture = res->loadTexture("texture", "res/texture.png");
     texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
 
     auto grass = res->loadTexture("grass", "res/grass.png");
@@ -32,13 +34,22 @@ void Application::run() {
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
 
     auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
+    auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
     auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
     customModel->transform.position.x = 6.f;
-    plane->transform.scale_fac = glm::vec3(100.f);
+    plane->transform.scale_fac = glm::vec3(50.f);
+    plane->transform.position.x = 150.f;
+    plane->transform.position.y = -150.f;
+    plane->transform.position.z = 0.f;
+
+    plane2->transform.scale_fac = glm::vec3(50.f);
+    plane2->transform.position.x = 100.f;
+    plane2->transform.position.y = -100.f;
+    plane2->transform.position.z = 1.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
@@ -46,6 +57,7 @@ void Application::run() {
     q3d::ui::Canvas canvas(window.getSize());
 
     canvas.add("plane", plane);
+    canvas.add("plane2", plane2);
     scene.add("box", box);
     scene.add("custom", customModel);
 
@@ -97,10 +109,16 @@ void Application::run() {
             cameraRotateDelta.y -= dm.x * cfg::cameraSensetivity * dt;
         } else window.showCursor();
 
-        if (window.isMouseButtonPressed(q3d::button::LEFT)) {
+        if (window.isKeyPressed(q3d::key::Z)) {
             auto m = window.getMousePos();
-            plane->transform.position.x = m.x - window.getSize().x / 2;
-            plane->transform.position.y = -m.y + window.getSize().y / 2;
+            plane->transform.position.x = m.x;
+            plane->transform.position.y = -m.y;
+        }
+
+        if (window.isKeyPressed(q3d::key::X)) {
+            auto m = window.getMousePos();
+            plane2->transform.position.x = m.x;
+            plane2->transform.position.y = -m.y;
         }
 
         cam->moveRotate(cameraMoveDelta, cameraRotateDelta);
