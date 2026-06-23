@@ -12,6 +12,7 @@
 #include <q3d/ui/text.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
+#include "q3d/phys/transform.hpp"
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <q3d/core/camera.hpp>
@@ -36,13 +37,13 @@ void Application::run() {
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
     auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
 
-    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Impact.TTF", 16);
+    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Impact.TTF", 36);
 
     auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
     auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(),texture);
     auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
-    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Hello, world!");
+    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Hello, World!", q3d::phys::Transform(), q3d::core::Color::Red);
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
@@ -50,12 +51,10 @@ void Application::run() {
     plane->transform.scale_fac = glm::vec3(50.f);
     plane->transform.position.x = 150.f;
     plane->transform.position.y = -150.f;
-    plane->transform.position.z = 0.f;
 
-    // plane2->transform.scale_fac = glm::vec3(50.f);
-    // plane2->transform.position.x = 100.f;
-    // plane2->transform.position.y = -100.f;
-    // plane2->transform.position.z = 1.f;
+    text->transform.position.x = 250.f;
+    text->transform.position.y = -250.f;
+    text->transform.position.z = 1.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
