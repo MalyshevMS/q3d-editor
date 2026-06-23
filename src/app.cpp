@@ -37,13 +37,13 @@ void Application::run() {
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
     auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
 
-    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Comic.TTF", 50);
+    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/CascadiaMono.ttf", 36);
 
     auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
     auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(),texture);
     auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
-    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Hello, World!", q3d::phys::Transform(), q3d::core::Color::Red);
+    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Привет, Мир!\nHello, World!", q3d::phys::Transform(), q3d::core::Color::Red);
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
