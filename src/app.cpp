@@ -37,7 +37,7 @@ void Application::run() {
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
     auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
 
-    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Impact.TTF", 36);
+    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Comic.TTF", 50);
 
     auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
     auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(),texture);
