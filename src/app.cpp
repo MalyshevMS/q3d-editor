@@ -1,4 +1,3 @@
-#include <glad/glad.h>
 #include "app.hpp"
 #include <memory>
 #include <q3d/gl/gl.hpp>
@@ -12,7 +11,7 @@
 #include <q3d/ui/text.hpp>
 #include <glm/glm.hpp>
 #include "config.txx"
-#include "q3d/phys/transform.hpp"
+#include <q3d/phys/transform.hpp>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <q3d/core/camera.hpp>
@@ -29,6 +28,9 @@ Application::Application(std::string_view argv0)
 }
 
 void Application::run() {
+    q3d::core::Scene scene;
+    q3d::ui::Canvas canvas(window.getSize());
+
     auto texture = res->loadTexture("texture", "res/texture.png");
     texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
 
@@ -37,35 +39,27 @@ void Application::run() {
     auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
     auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
 
-    auto impact = std::make_shared<q3d::ui::Font>("/usr/share/fonts/TTF/Impact.TTF", 40);
+    auto impact = res->loadFont("impact", "/usr/share/fonts/TTF/Impact.TTF", 40);
 
-    auto plane = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(), texture);
-    auto plane2 = std::make_shared<q3d::object::Plane>(shader, q3d::phys::Transform(),texture);
-    auto box = std::make_shared<q3d::object::Box>(shader, q3d::phys::Transform(), grass);
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
-    auto text = std::make_shared<q3d::ui::Text>(textShader, impact, "Привет, Мир!\nHello, World!", q3d::phys::Transform(), q3d::core::Color::Black);
+    auto box = scene.create<q3d::object::Box>("box", shader, q3d::phys::Transform(), grass);
+    auto plane = scene.create<q3d::object::Plane>("plane", shader, q3d::phys::Transform(), texture);
+    auto plane2 = canvas.create<q3d::object::Plane>("ui-plane", shader, q3d::phys::Transform({}, {}, glm::vec3(150.f)), texture);
+    auto text = canvas.create<q3d::ui::Text>("text", textShader, impact, "Hello, World!\nЯ также поддерживаю русский язык (если есть в шрифте)!\n\tА также управляющие символы (\\n, \\t и другие)!", q3d::phys::Transform(), q3d::core::Color::Black);
+    // text->setText("Можно также изменить текст после создания!");
+
+    scene.add("custom", customModel);
 
     box->transform.position.z = -5.f;
     box->transform.scale_fac.x = 2.f;
     customModel->transform.position.x = 6.f;
-    plane->transform.scale_fac = glm::vec3(50.f);
-    plane->transform.position.x = 150.f;
-    plane->transform.position.y = -150.f;
 
     text->transform.position.x = 8.f;
-    text->transform.position.y = 0.f;
+    text->transform.position.y = -40.f;
     text->transform.position.z = 0.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
-    q3d::core::Scene scene;
-    q3d::ui::Canvas canvas(window.getSize());
-
-    canvas.add("plane", plane);
-    canvas.add("text", text);
-    scene.add("plane2", plane2);
-    scene.add("box", box);
-    scene.add("custom", customModel);
 
     window.onResize([&](q3d::Window& win, glm::vec2 size){
         canvas.updateSize(size);
@@ -103,10 +97,10 @@ void Application::run() {
             cameraMoveDelta.y += cameraMove;
         }
         if (window.isKeyPressed(q3d::key::F)) {
-            plane->transform.scale_fac += glm::vec3(1.f);
+            plane2->transform.scale_fac += glm::vec3(1.f);
         }
         if (window.isKeyPressed(q3d::key::G)) {
-            plane->transform.scale_fac -= glm::vec3(1.f);
+            plane2->transform.scale_fac -= glm::vec3(1.f);
         }
 
         if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
@@ -117,8 +111,8 @@ void Application::run() {
 
         if (window.isKeyPressed(q3d::key::Z)) {
             auto m = window.getMousePos();
-            plane->transform.position.x = m.x;
-            plane->transform.position.y = -m.y;
+            plane2->transform.position.x = m.x;
+            plane2->transform.position.y = -m.y;
         }
 
         if (window.isKeyPressed(q3d::key::X)) {

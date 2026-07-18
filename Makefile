@@ -12,6 +12,7 @@ build:
 
 run: build
 	@if [ -f $(TARGET_BIN) ]; then \
+		clear; \
 		./$(TARGET_BIN); \
 	else \
 		echo "Ошибка: Бинарный файл $(TARGET_BIN) не найден!"; \
