@@ -44,8 +44,9 @@ void Application::run() {
     auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
     auto box = scene.create<q3d::object::Box>("box", shader, q3d::phys::Transform(), grass);
     auto plane = scene.create<q3d::object::Plane>("plane", shader, q3d::phys::Transform(), texture);
-    auto plane2 = canvas.create<q3d::object::Plane>("ui-plane", shader, q3d::phys::Transform({}, {}, glm::vec3(150.f)), texture);
-    auto text = canvas.create<q3d::ui::Text>("text", textShader, impact, "Hello, World!\nЯ также поддерживаю русский язык (если есть в шрифте)!\n\tА также управляющие символы (\\n, \\t и другие)!", q3d::phys::Transform(), q3d::core::Color::Black);
+    auto plane2 = canvas.create<q3d::object::Plane>("ui-plane", shader, q3d::phys::Transform({}, {}, glm::vec3(100.f)), grass);
+    auto plane3 = canvas.create<q3d::object::Plane>("ui-plane-2", shader, q3d::phys::Transform(glm::vec3(200, -200, 2), {}, glm::vec3(100.f)), texture);
+    auto text = canvas.create<q3d::ui::Text>("text", textShader, impact, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut\nlabore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco\nlaboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\nvoluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat\nnon proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", q3d::phys::Transform(), q3d::core::Color::Red);
     // text->setText("Можно также изменить текст после создания!");
 
     scene.add("custom", customModel);
@@ -56,10 +57,9 @@ void Application::run() {
 
     text->transform.position.x = 8.f;
     text->transform.position.y = -40.f;
-    text->transform.position.z = 0.f;
+    text->transform.position.z = 1.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
-
 
     window.onResize([&](q3d::Window& win, glm::vec2 size){
         canvas.updateSize(size);
@@ -67,8 +67,6 @@ void Application::run() {
     });
 
     q3d::gl::clearColor(q3d::core::Color::Cyan);
-    q3d::gl::enable(q3d::gl::feature::depthTest);
-    q3d::gl::enable(q3d::gl::feature::blend);
     while (window.isOpen()) {
         // CPU (math)
 
