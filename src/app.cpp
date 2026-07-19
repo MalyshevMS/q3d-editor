@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "config.txx"
+#include "q3d/window/keys.hpp"
 #include <format>
 #include <q3d/q3d.hpp>
 
@@ -21,7 +22,7 @@ void Application::run() {
     res->loadShader("text", "res/text.vert", "res/text.frag");
     res->loadTexture("box", "res/box.png");
     res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("box"));
-    res->loadFont("impact", "/usr/share/fonts/TTF/Impact.TTF", 30);
+    res->loadFont("default", "/usr/share/fonts/TTF/CascadiaMono.ttf", 30);
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.add("example-model", res->getModel("example"));
@@ -29,10 +30,10 @@ void Application::run() {
     scene["example-model"]->transform.position.y = 2.f;
     scene["example-model"]->transform.rotation.x = -90.f;
 
-    auto fpst = canvas.create<q3d::ui::Text>("FPS", res->getShader("text"), res->getFont("impact"), "FPS: 0.0", q3d::phys::Transform{}, q3d::core::Color::Red);
+    auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
-    canvas["FPS"]->transform.position.x = 10.f;
-    canvas["FPS"]->transform.position.y = -40.f;
+    canvas["debug"]->transform.position.x = 10.f;
+    canvas["debug"]->transform.position.y = 20.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
@@ -50,6 +51,7 @@ void Application::run() {
         // CPU (math)
 
         const float dt = window.getDeltaTime();
+        const auto dm = window.getDeltaMouse();
         const float cameraMove = cfg::cameraSpeed * dt;
 
         if (window.isKeyPressed(q3d::key::W)) cam->move({0, 0,  cameraMove});
@@ -61,18 +63,29 @@ void Application::run() {
 
         if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
             window.hideCursor();
-            const auto dm = window.getDeltaMouse();
 
             targetPitch -= dm.y * cfg::cameraSensetivity;
             targetYaw   -= dm.x * cfg::cameraSensetivity;
         } else window.showCursor();
+
+        if (window.isMouseButtonPressed(q3d::button::LEFT)) {
+            debug->transform.position.x += dm.x;
+            debug->transform.position.y -= dm.y;
+        }
 
         float currentPitch = glm::mix(cam->getRotation().x, targetPitch, std::min(1.f, cfg::smoothness * dt));
         float currentYaw   = glm::mix(cam->getRotation().y, targetYaw  , std::min(1.f, cfg::smoothness * dt));
 
         cam->setRotation({currentPitch, currentYaw, 0.f});
 
-        fpst->setText(std::format("FPS: {:.2f}", 1 / dt));
+        debug->setText(std::format(R"(
+FPS: {0:.2f} | Position: {2:.2f}; {3:.2f}; {4:.2f}
+DT: {1:.4f}  | Rotation: {5:.2f}; {6:.2f}; {7:.2f}
+            )",
+            1 / dt, dt,
+            cam->getPosition().x, cam->getPosition().y, cam->getPosition().z,
+            cam->getRotation().x, cam->getRotation().y, cam->getRotation().z
+        ));
 
         // GPU
 
