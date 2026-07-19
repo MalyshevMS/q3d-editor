@@ -8,6 +8,9 @@ Application::Application(std::string_view argv0)
     res = q3d::Resources::getInstance(argv0);
     cam = std::make_shared<q3d::core::Camera>(window.getAspectRatio(), 90.f);
     q3d::core::ActiveCamera::set(cam);
+
+    window.setVSync(false);
+    window.fpsMax(500);
 }
 
 void Application::run() {
@@ -16,11 +19,11 @@ void Application::run() {
 
     res->loadShader("object", "res/main.vert", "res/main.frag");
     res->loadShader("text", "res/text.vert", "res/text.frag");
-    res->loadTexture("grass", "res/grass.png");
-    res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("grass"));
+    res->loadTexture("box", "res/box.png");
+    res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("box"));
     res->loadFont("impact", "/usr/share/fonts/TTF/Impact.TTF", 30);
 
-    scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform{});
+    scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.add("example-model", res->getModel("example"));
 
     scene["example-model"]->transform.position.y = 2.f;
@@ -39,6 +42,10 @@ void Application::run() {
     });
 
     q3d::gl::clearColor(q3d::core::Color(0.5f, 0.5f, 0.5f));
+
+    float targetPitch = 0.f;
+    float targetYaw   = 0.f;
+
     while (window.isOpen()) {
         // CPU (math)
 
@@ -55,8 +62,15 @@ void Application::run() {
         if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
             window.hideCursor();
             const auto dm = window.getDeltaMouse();
-            cam->rotate({-dm.y * cfg::cameraSensetivity * dt, -dm.x * cfg::cameraSensetivity * dt, 0});
+
+            targetPitch -= dm.y * cfg::cameraSensetivity;
+            targetYaw   -= dm.x * cfg::cameraSensetivity;
         } else window.showCursor();
+
+        float currentPitch = glm::mix(cam->getRotation().x, targetPitch, std::min(1.f, cfg::smoothness * dt));
+        float currentYaw   = glm::mix(cam->getRotation().y, targetYaw  , std::min(1.f, cfg::smoothness * dt));
+
+        cam->setRotation({currentPitch, currentYaw, 0.f});
 
         fpst->setText(std::format("FPS: {:.2f}", 1 / dt));
 
