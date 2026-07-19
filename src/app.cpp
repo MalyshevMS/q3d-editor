@@ -1,24 +1,7 @@
 #include "app.hpp"
-#include <memory>
-#include <q3d/gl/gl.hpp>
-#include <q3d/core/active_camera.hpp>
-#include <q3d/obj/2d/plane.hpp>
-#include <q3d/obj/3d/box.hpp>
-#include <q3d/obj/3d/model.hpp>
-#include <q3d/core/scene.hpp>
-#include <q3d/ui/canvas.hpp>
-#include <q3d/ui/font.hpp>
-#include <q3d/ui/text.hpp>
-#include <glm/glm.hpp>
 #include "config.txx"
-#include <q3d/phys/transform.hpp>
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <q3d/core/camera.hpp>
-#include <q3d/core/color.hpp>
-#include <q3d/log/log.hpp>
-#include <q3d/window/keys.hpp>
-#include <q3d/window/window.hpp>
+#include <format>
+#include <q3d/q3d.hpp>
 
 Application::Application(std::string_view argv0)
  : window("q3d editor", { 1280, 720 }), res(nullptr) {
@@ -31,33 +14,22 @@ void Application::run() {
     q3d::core::Scene scene;
     q3d::ui::Canvas canvas(window.getSize());
 
-    auto texture = res->loadTexture("texture", "res/texture.png");
-    texture->setFilter(q3d::gl::Texture::Filter::NearestMMNearest, q3d::gl::Texture::Filter::Nearest);
+    res->loadShader("object", "res/main.vert", "res/main.frag");
+    res->loadShader("text", "res/text.vert", "res/text.frag");
+    res->loadTexture("grass", "res/grass.png");
+    res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("grass"));
+    res->loadFont("impact", "/usr/share/fonts/TTF/Impact.TTF", 30);
 
-    auto grass = res->loadTexture("grass", "res/grass.png");
+    scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform{});
+    scene.add("example-model", res->getModel("example"));
 
-    auto shader = res->loadShader("main", "res/main.vert", "res/main.frag");
-    auto textShader = res->loadShader("text", "res/text.vert", "res/text.frag");
+    scene["example-model"]->transform.position.y = 2.f;
+    scene["example-model"]->transform.rotation.x = -90.f;
 
-    auto impact = res->loadFont("impact", "/usr/share/fonts/TTF/Impact.TTF", 40);
+    auto fpst = canvas.create<q3d::ui::Text>("FPS", res->getShader("text"), res->getFont("impact"), "FPS: 0.0", q3d::phys::Transform{}, q3d::core::Color::Red);
 
-    auto customModel = res->loadModel("example", "res/example.obj", shader, texture);
-    auto box = scene.create<q3d::object::Box>("box", shader, q3d::phys::Transform(), grass);
-    auto plane = scene.create<q3d::object::Plane>("plane", shader, q3d::phys::Transform(), texture);
-    auto plane2 = canvas.create<q3d::object::Plane>("ui-plane", shader, q3d::phys::Transform({}, {}, glm::vec3(100.f)), grass);
-    auto plane3 = canvas.create<q3d::object::Plane>("ui-plane-2", shader, q3d::phys::Transform(glm::vec3(200, -200, 2), {}, glm::vec3(100.f)), texture);
-    auto text = canvas.create<q3d::ui::Text>("text", textShader, impact, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut\nlabore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco\nlaboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in\nvoluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat\nnon proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", q3d::phys::Transform(), q3d::core::Color::Red);
-    // text->setText("Можно также изменить текст после создания!");
-
-    scene.add("custom", customModel);
-
-    box->transform.position.z = -5.f;
-    box->transform.scale_fac.x = 2.f;
-    customModel->transform.position.x = 6.f;
-
-    text->transform.position.x = 8.f;
-    text->transform.position.y = -40.f;
-    text->transform.position.z = 1.f;
+    canvas["FPS"]->transform.position.x = 10.f;
+    canvas["FPS"]->transform.position.y = -40.f;
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
@@ -66,60 +38,27 @@ void Application::run() {
         cam->setAspect(size.x / size.y);
     });
 
-    q3d::gl::clearColor(q3d::core::Color::Cyan);
+    q3d::gl::clearColor(q3d::core::Color(0.5f, 0.5f, 0.5f));
     while (window.isOpen()) {
         // CPU (math)
 
-        const auto dt = window.getDeltaTime();
-        const auto dm = window.getDeltaMouse();
+        const float dt = window.getDeltaTime();
         const float cameraMove = cfg::cameraSpeed * dt;
-        auto cameraMoveDelta = glm::vec3(0.f);
-        auto cameraRotateDelta = glm::vec3(0.f);
 
-        if (window.isKeyPressed(q3d::key::W)) {
-            cameraMoveDelta.z += cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::S)) {
-            cameraMoveDelta.z -= cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::D)) {
-            cameraMoveDelta.x += cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::A)) {
-            cameraMoveDelta.x -= cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::Q)) {
-            cameraMoveDelta.y -= cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::E)) {
-            cameraMoveDelta.y += cameraMove;
-        }
-        if (window.isKeyPressed(q3d::key::F)) {
-            plane2->transform.scale_fac += glm::vec3(1.f);
-        }
-        if (window.isKeyPressed(q3d::key::G)) {
-            plane2->transform.scale_fac -= glm::vec3(1.f);
-        }
+        if (window.isKeyPressed(q3d::key::W)) cam->move({0, 0,  cameraMove});
+        if (window.isKeyPressed(q3d::key::S)) cam->move({0, 0, -cameraMove});
+        if (window.isKeyPressed(q3d::key::D)) cam->move({ cameraMove, 0, 0});
+        if (window.isKeyPressed(q3d::key::A)) cam->move({-cameraMove, 0, 0});
+        if (window.isKeyPressed(q3d::key::E)) cam->move({0,  cameraMove, 0});
+        if (window.isKeyPressed(q3d::key::Q)) cam->move({0, -cameraMove, 0});
 
         if (window.isMouseButtonPressed(q3d::button::RIGHT)) {
             window.hideCursor();
-            cameraRotateDelta.x -= dm.y * cfg::cameraSensetivity * dt;
-            cameraRotateDelta.y -= dm.x * cfg::cameraSensetivity * dt;
+            const auto dm = window.getDeltaMouse();
+            cam->rotate({-dm.y * cfg::cameraSensetivity * dt, -dm.x * cfg::cameraSensetivity * dt, 0});
         } else window.showCursor();
 
-        if (window.isKeyPressed(q3d::key::Z)) {
-            auto m = window.getMousePos();
-            plane2->transform.position.x = m.x;
-            plane2->transform.position.y = -m.y;
-        }
-
-        if (window.isKeyPressed(q3d::key::X)) {
-            auto m = window.getMousePos();
-            text->transform.position.x = m.x;
-            text->transform.position.y = -m.y;
-        }
-
-        cam->moveRotate(cameraMoveDelta, cameraRotateDelta);
+        fpst->setText(std::format("FPS: {:.2f}", 1 / dt));
 
         // GPU
 
