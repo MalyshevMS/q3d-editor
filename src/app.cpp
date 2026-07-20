@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "app.hpp"
 #include "config.txx"
 #include <format>
@@ -13,6 +14,8 @@ Application::Application(std::string_view argv0)
 
     window.setVSync(false);
     window.fpsMax(500);
+
+    cam->setFar(1000.f);
 }
 
 void Application::run() {
@@ -24,7 +27,7 @@ void Application::run() {
     res->loadShader("text", "res/text.vert", "res/text.frag");
     res->loadShader("post", "res/post.vert", "res/post.frag");
     res->loadTexture("box", "res/box.png");
-    res->loadTexture("grass", "res/grass.png");
+    res->loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
     res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("box"));
     res->loadFont("default", "res/font.ttf", 40);
 
@@ -32,6 +35,7 @@ void Application::run() {
     screen.setTexture(res->getTexture("box"));
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
+    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
     scene.add("example-model", res->getModel("example"));
 
     scene["example-model"]->transform.position.y = 2.f;
@@ -42,7 +46,7 @@ void Application::run() {
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
 
-    cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
+    cam->setPosition(glm::vec3(0.f, 1.5f, 5.f));
 
     q3d::gl::Fbo fbo(window.getFBSize());
 
@@ -57,6 +61,9 @@ void Application::run() {
 
     auto targetPos = cam->getPosition();
     auto targetRot = cam->getRotation();
+
+    auto lastPos = targetPos;
+    auto lastRot = targetRot;
 
     while (window.isOpen()) {
         // CPU (math)
@@ -99,6 +106,22 @@ void Application::run() {
 
         cam->set(currentPos, currentRot);
 
+        glm::vec2 rotationDelta(
+            currentRot.y - lastRot.y,
+            currentRot.x - lastRot.x
+        );
+
+        glm::vec3 translationDelta = currentPos - lastPos;
+
+        glm::vec2 linearMovement(translationDelta.x, translationDelta.y);
+
+        glm::vec2 blurVector = (rotationDelta * 0.05f) + (linearMovement * 0.3f);
+
+        float blurForward = std::abs(translationDelta.z) * 0.3f;
+
+        lastPos = currentPos;
+        lastRot = currentRot;
+
         debug->setText(std::format(R"(
 FPS: {:.2f}
 DT: {:.4f}
@@ -121,6 +144,12 @@ Rotation: {:.2f}; {:.2f}; {:.2f}
 
         fbo.unbind();
 
+        auto post = res->getShader("post");
+        post->use();
+        post->uniform("u_blurVector", blurVector);
+        post->uniform("u_blurForward", blurForward);
+        post->uniform("u_vignettePower", 1.f);
+        post->uniform("u_chromaticIntensity", 0.003f);
         screen.setTexture(fbo.getTexture());
         screen.draw();
 
