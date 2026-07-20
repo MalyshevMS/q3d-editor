@@ -1,4 +1,3 @@
-#include <glad/glad.h>
 #include "app.hpp"
 #include "config.txx"
 #include <format>
@@ -19,13 +18,18 @@ Application::Application(std::string_view argv0)
 void Application::run() {
     q3d::core::Scene scene;
     q3d::ui::Canvas canvas(window.getSize());
+    q3d::Screen screen;
 
     res->loadShader("object", "res/main.vert", "res/main.frag");
     res->loadShader("text", "res/text.vert", "res/text.frag");
     res->loadShader("post", "res/post.vert", "res/post.frag");
     res->loadTexture("box", "res/box.png");
+    res->loadTexture("grass", "res/grass.png");
     res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("box"));
     res->loadFont("default", "res/font.ttf", 40);
+
+    screen.setShader(res->getShader("post"));
+    screen.setTexture(res->getTexture("box"));
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.add("example-model", res->getModel("example"));
@@ -40,7 +44,7 @@ void Application::run() {
 
     cam->setPosition(glm::vec3(0.f, 0.f, 3.f));
 
-    q3d::gl::Fbo fbo(window.getFBSize(), res->getShader("post"));
+    q3d::gl::Fbo fbo(window.getFBSize());
 
     window.onResize([&](q3d::Window& win, glm::vec2 size){
         canvas.updateSize(size);
@@ -96,10 +100,10 @@ void Application::run() {
         cam->set(currentPos, currentRot);
 
         debug->setText(std::format(R"(
-FPS: {0:.2f}
-DT: {1:.4f}
-Position: {2:.2f}; {3:.2f}; {4:.2f} 
-Rotation: {5:.2f}; {6:.2f}; {7:.2f} 
+FPS: {:.2f}
+DT: {:.4f}
+Position: {:.2f}; {:.2f}; {:.2f}
+Rotation: {:.2f}; {:.2f}; {:.2f}
             )",
             1 / dt, dt,
             cam->getPosition().x, cam->getPosition().y, cam->getPosition().z,
@@ -117,7 +121,8 @@ Rotation: {5:.2f}; {6:.2f}; {7:.2f}
 
         fbo.unbind();
 
-        fbo.draw();
+        screen.setTexture(fbo.getTexture());
+        screen.draw();
 
         canvas.render();
 
