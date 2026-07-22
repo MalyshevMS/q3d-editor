@@ -13,7 +13,7 @@ Application::Application(std::string_view argv0)
     q3d::core::ActiveCamera::set(cam);
 
     window.setVSync(false);
-    window.fpsMax(500);
+    window.fpsMax(1000);
 
     cam->setFar(1000.f);
 }
@@ -28,23 +28,22 @@ void Application::run() {
     res->loadShader("post", "res/post.vert", "res/post.frag");
     res->loadTexture("box", "res/box.png");
     res->loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
-    res->loadModel("example", "res/example.obj", res->getShader("object"), res->getTexture("box"));
     res->loadFont("default", "res/font.ttf", 40);
+    res->loadMaterial("default", "res/default.json");
 
     screen.setShader(res->getShader("post"));
     screen.setTexture(res->getTexture("box"));
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
-    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -1.f, 0.f), glm::vec3(90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
-    scene.add("example-model", res->getModel("example"));
-
-    scene["example-model"]->transform.position.y = 2.f;
-    scene["example-model"]->transform.rotation.x = -90.f;
+    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -7.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
+
+    scene["box"]->material = res->getMaterial("default");;
+    scene["plane"]->material = res->getMaterial("default");
 
     cam->setPosition(glm::vec3(0.f, 1.5f, 5.f));
 
