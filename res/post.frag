@@ -58,7 +58,7 @@ vec3 applyColorCorrection(vec3 baseColor) {
 void main() {
     vec3 color = applyMotionBlur(TexCoords);
 
-    color = applyChromaticAberration(TexCoords, color);
+    // color = applyChromaticAberration(TexCoords, color);
 
     color = applyVignette(TexCoords, color);
 

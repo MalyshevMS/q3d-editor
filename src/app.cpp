@@ -37,6 +37,11 @@ void Application::run() {
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -7.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
+    scene.addDirLight("sun", q3d::object::DirLight{});
+    scene.addDirLight("sun2", q3d::object::DirLight{
+        .direction = glm::vec3(1.f, -1.f, 1.f),
+    });
+
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;

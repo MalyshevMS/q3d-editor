@@ -31,11 +31,20 @@ struct PointLight {
     vec3 specular;
 };
 
+struct SpotLight {
+    vec3 position;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
 // Uniforms
 
 uniform sampler2D u_texture;
 uniform Material u_material;
 uniform vec3 u_viewPos;
+uniform DirLight u_dirLight;
 
 // SSBO
 
@@ -45,6 +54,10 @@ layout(std430, binding = 0) readonly buffer DirLightBuffer {
 
 layout(std430, binding = 1) readonly buffer PointLightBuffer {
     PointLight pointLights[];
+};
+
+layout(std430, binding = 2) readonly buffer SpotLightBuffer {
+    SpotLight spotLights[];
 };
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor) {
@@ -73,11 +86,7 @@ void main() {
     vec3 result = vec3(0.0);
 
     for (int i = 0; i < dirLights.length(); i++) {
-        result += calcDirLight(dirlights[i], norm, viewDir, texColor);
-    }
-
-    for (int i = 0; i < pointLights.length(); i++) {
-        // result += calcPointLight(pointLights[i]);
+        result += calcDirLight(dirLights[i], norm, viewDir, texColor);
     }
 
     FragColor = vec4(result, 1.0);
