@@ -42,7 +42,7 @@ void Application::run() {
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
 
-    scene["box"]->material = res->getMaterial("default");;
+    scene["box"]->material = res->getMaterial("default");
     scene["plane"]->material = res->getMaterial("default");
 
     cam->setPosition(glm::vec3(0.f, 1.5f, 5.f));
