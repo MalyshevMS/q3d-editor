@@ -37,9 +37,16 @@ void Application::run() {
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -7.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
-    scene.addDirLight("sun", q3d::object::DirLight{});
-    scene.addDirLight("sun2", q3d::object::DirLight{
-        .direction = glm::vec3(1.f, -1.f, 1.f),
+    scene.addDirLight("sun", q3d::object::DirLight{
+        .diffuse = glm::vec3(0.2f),
+    });
+
+    scene.addPointLight("point", q3d::object::PointLight{
+        .position = glm::vec3(0.f, -3.f, 0.f)
+    });
+
+    scene.addPointLight("point2", q3d::object::PointLight{
+        .position = glm::vec3(4.f, -5.f, 90.f)
     });
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
@@ -83,6 +90,9 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::A)) moveOffset.x -= targetMoveStep;
         if (window.isKeyPressed(q3d::key::E)) moveOffset.y += targetMoveStep;
         if (window.isKeyPressed(q3d::key::Q)) moveOffset.y -= targetMoveStep;
+
+        if (window.isKeyPressed(q3d::key::F)) scene["box"]->transform.position.y += dt * 3;
+        if (window.isKeyPressed(q3d::key::G)) scene["box"]->transform.position.y -= dt * 3;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();

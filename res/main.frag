@@ -25,9 +25,14 @@ struct DirLight {
 
 struct PointLight {
     vec3 position;
+    float constant;
 
     vec3 ambient;
+    float linear;
+
     vec3 diffuse;
+    float quadratic;
+
     vec3 specular;
 };
 
@@ -78,6 +83,30 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor) {
     return (ambient + diffuse + specular);
 }
 
+vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 texColor) {
+    vec3 lightDir = normalize(light.position - fragPos);
+
+    // Ambient
+    vec3 ambient = light.ambient * u_material.ambient * texColor;
+
+    // Diffuse
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = light.diffuse * (diff * u_material.diffuse) * texColor;
+
+    // Specular
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), u_material.shininess);
+    vec3 specular = light.specular * (spec * u_material.specular);
+
+    // Attenuation
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0 / (
+        light.constant + light.linear * distance + light.quadratic * distance * distance
+    );
+
+    return (ambient + diffuse + specular) * attenuation;
+}
+
 void main() {
     vec3 norm = normalize(vNormal);
     vec3 viewDir = normalize(u_viewPos - vFragPos);
@@ -85,8 +114,14 @@ void main() {
 
     vec3 result = vec3(0.0);
 
+    // Directional
     for (int i = 0; i < dirLights.length(); i++) {
         result += calcDirLight(dirLights[i], norm, viewDir, texColor);
+    }
+
+    // Point
+    for (int i = 0; i < pointLights.length(); i++) {
+        result += calcPointLight(pointLights[i], norm, vFragPos, viewDir, texColor);
     }
 
     FragColor = vec4(result, 1.0);
