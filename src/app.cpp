@@ -35,18 +35,24 @@ void Application::run() {
     screen.setTexture(res->getTexture("box"));
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
-    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -7.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
+    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
     scene.addDirLight("sun", q3d::object::DirLight{
-        .diffuse = glm::vec3(0.2f),
+        .diffuse = glm::vec3(0.0f),
     });
 
-    scene.addPointLight("point", q3d::object::PointLight{
-        .position = glm::vec3(0.f, -3.f, 0.f)
+    scene.addSpotLight("spot", q3d::object::SpotLight{
+        .position = glm::vec3(-3.f, 3.f, 0.f),
+        .direction = glm::vec3(1.f, -1.f, 0.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
     });
 
-    scene.addPointLight("point2", q3d::object::PointLight{
-        .position = glm::vec3(4.f, -5.f, 90.f)
+    scene.addSpotLight("spot2", q3d::object::SpotLight{
+        .position = glm::vec3(3.f, 3.f, 0.f),
+        .direction = glm::vec3(-1.f, -1.f, 0.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
     });
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
@@ -91,8 +97,12 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::E)) moveOffset.y += targetMoveStep;
         if (window.isKeyPressed(q3d::key::Q)) moveOffset.y -= targetMoveStep;
 
-        if (window.isKeyPressed(q3d::key::F)) scene["box"]->transform.position.y += dt * 3;
-        if (window.isKeyPressed(q3d::key::G)) scene["box"]->transform.position.y -= dt * 3;
+        if (window.isKeyPressed(q3d::key::UP))    scene["box"]->transform.position.z += dt * 3;
+        if (window.isKeyPressed(q3d::key::DOWN))  scene["box"]->transform.position.z -= dt * 3;
+        if (window.isKeyPressed(q3d::key::LEFT))  scene["box"]->transform.position.x += dt * 3;
+        if (window.isKeyPressed(q3d::key::RIGHT)) scene["box"]->transform.position.x -= dt * 3;
+        if (window.isKeyPressed(q3d::key::F))     scene["box"]->transform.position.y += dt * 3;
+        if (window.isKeyPressed(q3d::key::G))     scene["box"]->transform.position.y -= dt * 3;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();
