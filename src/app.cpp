@@ -26,6 +26,7 @@ void Application::run() {
     res->loadShader("object", "res/main.vert", "res/main.frag");
     res->loadShader("text", "res/text.vert", "res/text.frag");
     res->loadShader("post", "res/post.vert", "res/post.frag");
+    res->loadShader("depth", "res/depth.vert", "res/depth.frag");
     res->loadTexture("box", "res/box.png");
     res->loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
     res->loadFont("default", "res/font.ttf", 40);
@@ -38,22 +39,19 @@ void Application::run() {
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
     scene.addDirLight("sun", q3d::object::DirLight{
-        .diffuse = glm::vec3(0.0f),
+        .diffuse = glm::vec3(0.7f),
     });
 
-    scene.addSpotLight("spot", q3d::object::SpotLight{
-        .position = glm::vec3(-3.f, 3.f, 0.f),
-        .direction = glm::vec3(1.f, -1.f, 0.f),
-        .linear = 0.007f,
-        .quadratic = 0.0002f,
-    });
-
-    scene.addSpotLight("spot2", q3d::object::SpotLight{
-        .position = glm::vec3(3.f, 3.f, 0.f),
-        .direction = glm::vec3(-1.f, -1.f, 0.f),
-        .linear = 0.007f,
-        .quadratic = 0.0002f,
-    });
+    // scene.addSpotLight("spot", q3d::object::SpotLight{
+    //     .position = glm::vec3(-3.f, 3.f, 0.f),
+    //     .direction = glm::vec3(-1.f, -1.f, 0.f),
+    //     .linear = 0.007f,
+    //     .quadratic = 0.0002f,
+    // });
+    //
+    // scene.addPointLight("point", q3d::object::PointLight{
+    //     .position = glm::vec3(15.f, 1.f, 3.f)
+    // });
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 

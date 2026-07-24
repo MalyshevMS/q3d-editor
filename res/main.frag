@@ -56,9 +56,10 @@ struct SpotLight {
 // Uniforms
 
 uniform sampler2D u_texture;
+uniform sampler2D u_shadowMap;
+uniform mat4 u_lightSpaceMatrix;
 uniform Material u_material;
 uniform vec3 u_viewPos;
-uniform DirLight u_dirLight;
 
 // SSBO
 
@@ -74,7 +75,26 @@ layout(std430, binding = 2) readonly buffer SpotLightBuffer {
     SpotLight spotLights[];
 };
 
-vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor) {
+float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir) {
+    vec4 fragPosLightSpace = u_lightSpaceMatrix * vec4(fragPos, 1.0);
+
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if (projCoords.z > 1.0) return 0.0;
+
+    float closestDepth = texture(u_shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
+vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor, float shadow) {
     vec3 lightDir = normalize(-light.direction);
 
     // Ambient
@@ -89,7 +109,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor) {
     float spec = pow(max(dot(normal, halfwayDir), 0.0), u_material.shininess);
     vec3 specular = light.specular * (spec * u_material.specular);
 
-    return (ambient + diffuse + specular);
+    return ambient + (diffuse + specular) * (1.0 - shadow);
 }
 
 vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 texColor) {
@@ -150,11 +170,15 @@ void main() {
     vec3 viewDir = normalize(u_viewPos - vFragPos);
     vec3 texColor = texture(u_texture, vUV).rgb;
 
+    vec3 mainSunDir = normalize(-dirLights[0].direction);
+    float shadow = calcShadow(vFragPos, norm, mainSunDir);
+
     vec3 result = vec3(0.0);
 
     // Directional
     for (int i = 0; i < dirLights.length(); i++) {
-        result += calcDirLight(dirLights[i], norm, viewDir, texColor);
+        float currentShadow = (i == 0) ? shadow : 0.0;
+        result += calcDirLight(dirLights[i], norm, viewDir, texColor, currentShadow);
     }
 
     // Point
