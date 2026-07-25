@@ -193,6 +193,5 @@ void main() {
         result += calcSpotLight(spotLights[i], norm, vFragPos, viewDir, texColor);
     }
 
-    float depthVal = texture(u_shadowMap, vUV).r;
-    FragColor = vec4(vec3(depthVal), 1.0);
+    FragColor = vec4(result, 1.0);
 }

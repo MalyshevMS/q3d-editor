@@ -33,13 +33,13 @@ void Application::run() {
 
     screen.setShader(res->getShader("post"));
 
-    scene.initShadows(res->getShader("depth"), 2048);
+    scene.initShadows(res->getShader("depth"), 8192);
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
     scene.addDirLight("sun", q3d::object::DirLight{
-        .direction = glm::vec3(-0.5f, -1.f, -0.3f),
+        .direction = glm::vec3(-1.f, -1.f, 0.f),
         .diffuse = glm::vec3(0.7f),
     });
 
@@ -85,12 +85,19 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::E)) moveOffset.y += targetMoveStep;
         if (window.isKeyPressed(q3d::key::Q)) moveOffset.y -= targetMoveStep;
 
-        if (window.isKeyPressed(q3d::key::UP))    scene["box"]->transform.position.z += dt * 3;
-        if (window.isKeyPressed(q3d::key::DOWN))  scene["box"]->transform.position.z -= dt * 3;
-        if (window.isKeyPressed(q3d::key::LEFT))  scene["box"]->transform.position.x += dt * 3;
-        if (window.isKeyPressed(q3d::key::RIGHT)) scene["box"]->transform.position.x -= dt * 3;
-        if (window.isKeyPressed(q3d::key::F))     scene["box"]->transform.position.y += dt * 3;
-        if (window.isKeyPressed(q3d::key::G))     scene["box"]->transform.position.y -= dt * 3;
+        if (window.isKeyPressed(q3d::key::O)) scene["box"]->transform.position.y += dt * 5;
+        if (window.isKeyPressed(q3d::key::U)) scene["box"]->transform.position.y -= dt * 5;
+        if (window.isKeyPressed(q3d::key::I)) scene["box"]->transform.position.z -= dt * 5;
+        if (window.isKeyPressed(q3d::key::K)) scene["box"]->transform.position.z += dt * 5;
+        if (window.isKeyPressed(q3d::key::J)) scene["box"]->transform.position.x -= dt * 5;
+        if (window.isKeyPressed(q3d::key::L)) scene["box"]->transform.position.x += dt * 5;
+
+        if (window.isKeyPressed(q3d::key::F)) scene["box"]->transform.rotation.y += dt * 60;
+        if (window.isKeyPressed(q3d::key::H)) scene["box"]->transform.rotation.y -= dt * 60;
+        if (window.isKeyPressed(q3d::key::R)) scene["box"]->transform.rotation.z += dt * 60;
+        if (window.isKeyPressed(q3d::key::Y)) scene["box"]->transform.rotation.z -= dt * 60;
+        if (window.isKeyPressed(q3d::key::T)) scene["box"]->transform.rotation.x += dt * 60;
+        if (window.isKeyPressed(q3d::key::G)) scene["box"]->transform.rotation.x -= dt * 60;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();
