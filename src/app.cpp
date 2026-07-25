@@ -39,6 +39,7 @@ void Application::run() {
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
     scene.addDirLight("sun", q3d::object::DirLight{
+        .direction = glm::vec3(-1.f, -1.f, -1.f),
         .diffuse = glm::vec3(0.7f),
     });
 
