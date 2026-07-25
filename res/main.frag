@@ -82,7 +82,9 @@ float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir) {
 
     projCoords = projCoords * 0.5 + 0.5;
 
-    if (projCoords.z > 1.0) return 0.0;
+    if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) {
+        return 0.0;
+    }
 
     float closestDepth = texture(u_shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
@@ -191,5 +193,6 @@ void main() {
         result += calcSpotLight(spotLights[i], norm, vFragPos, viewDir, texColor);
     }
 
-    FragColor = vec4(result, 1.0);
+    float depthVal = texture(u_shadowMap, vUV).r;
+    FragColor = vec4(vec3(depthVal), 1.0);
 }
