@@ -40,12 +40,14 @@ void Application::run() {
 
     scene.addDirLight("sun", q3d::object::DirLight{
         .direction = glm::vec3(-1.f, -1.f, -1.f),
-        .diffuse = glm::vec3(1.f),
+        .diffuse = glm::vec3(0.2f),
     });
 
-    scene.addDirLight("sun2", q3d::object::DirLight{
-        .direction = glm::vec3(1.f, -1.f, 1.f),
-        .diffuse = glm::vec3(1.f),
+    scene.addSpotLight("spot", q3d::object::SpotLight{
+        .position = glm::vec3(-3.f, 3.f, 0.f),
+        .direction = glm::vec3(-1.f, -1.f, -1.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
     });
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
