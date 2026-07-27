@@ -57,8 +57,8 @@ struct SpotLight {
 
 uniform sampler2D u_texture;
 uniform sampler2DArray u_shadowMap;
-uniform mat4 u_lightSpaceMatrix;
-uniform mat4 u_lightSpaceMatrix2;
+// uniform mat4 u_lightSpaceMatrix;
+// uniform mat4 u_lightSpaceMatrix2;
 uniform Material u_material;
 uniform vec3 u_viewPos;
 
@@ -74,6 +74,10 @@ layout(std430, binding = 1) readonly buffer PointLightBuffer {
 
 layout(std430, binding = 2) readonly buffer SpotLightBuffer {
     SpotLight spotLights[];
+};
+
+layout(std430, binding = 3) readonly buffer LightSpaceMatrices {
+    mat4 lightSpaceMatrices[];
 };
 
 float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir, mat4 mtrx, int index) {
@@ -171,19 +175,18 @@ void main() {
     vec3 viewDir = normalize(u_viewPos - vFragPos);
     vec3 texColor = texture(u_texture, vUV).rgb;
 
-    vec3 mainSunDir = normalize(-dirLights[0].direction);
-    float shadow = calcShadow(vFragPos, norm, mainSunDir, u_lightSpaceMatrix, 0);
-
-    vec3 mainSunDir2 = normalize(-dirLights[1].direction);
-    float shadow2 = calcShadow(vFragPos, norm, mainSunDir, u_lightSpaceMatrix2, 1);
+    // vec3 mainSunDir = normalize(-dirLights[0].direction);
+    // float shadow = calcShadow(vFragPos, norm, mainSunDir, u_lightSpaceMatrix, 0);
+    //
+    // vec3 mainSunDir2 = normalize(-dirLights[1].direction);
+    // float shadow2 = calcShadow(vFragPos, norm, mainSunDir, u_lightSpaceMatrix2, 1);
 
     vec3 result = vec3(0.0);
 
     // Directional
     for (int i = 0; i < dirLights.length(); i++) {
-        float currentShadow = 0.0;
-        if (i == 0) currentShadow = shadow;
-        if (i == 1) currentShadow = shadow2;
+        float currentShadow = calcShadow(vFragPos, norm, normalize(-dirLights[i].direction), lightSpaceMatrices[i], i);
+
         result += calcDirLight(dirLights[i], norm, viewDir, texColor, currentShadow);
     }
 
