@@ -91,7 +91,10 @@ float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int index) {
     float closestDepth = texture(u_shadowMap, vec3(projCoords.xy, index)).r;
     float currentDepth = projCoords.z;
 
-    float bias = max(0.01 * (1.0 - dot(normal, lightDir)), 0.001);
+    float bias = max(
+        0.0002 * (1.0 - dot(normal, lightDir)),
+        0.00002
+    );
     float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     return shadow;

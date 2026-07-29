@@ -44,8 +44,15 @@ void Application::run() {
     });
 
     scene.addSpotLight("spot", q3d::object::SpotLight{
-        .position = glm::vec3(-3.f, 3.f, 0.f),
-        .direction = glm::vec3(-1.f, -1.f, -1.f),
+        .position = glm::vec3(0.f, 3.f, 0.f),
+        .direction = glm::vec3(0.f, -1.f, 0.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
+    });
+
+    scene.addSpotLight("spot2", q3d::object::SpotLight{
+        .position = glm::vec3(0.f, 3.f, 3.f),
+        .direction = glm::vec3(0.f, -0.5f, -0.85f),
         .linear = 0.007f,
         .quadratic = 0.0002f,
     });
@@ -85,6 +92,12 @@ void Application::run() {
         const auto dm = window.getDeltaMouse();
         const float targetMoveStep = cfg::cameraSpeed * dt;
         glm::vec3 moveOffset(0.f);
+
+        if (window.isKeyPressed(q3d::key::SPACE)) {
+            auto dir = -glm::vec3(glm::inverse(cam->getView())[2]);
+            scene.getSpotLight("spot")->direction = glm::normalize(dir);
+            scene.getSpotLight("spot")->position = cam->getPosition();
+        }
 
         if (window.isKeyPressed(q3d::key::W)) moveOffset.z += targetMoveStep;
         if (window.isKeyPressed(q3d::key::S)) moveOffset.z -= targetMoveStep;
