@@ -34,13 +34,12 @@ void Application::run() {
 
     screen.setShader(res->getShader("post"));
 
-    scene.initShadows(res->getShader("depth"), 8192);
-    scene.initPointShadows(res->getShader("point_shadow"), 2048);
+    scene.initShadows(res->getShader("depth"));
+    scene.initPointShadows(res->getShader("point_shadow"));
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
 
-    // Disable other light sources for now
     scene.addDirLight("sun", q3d::object::DirLight{
         .direction = glm::vec3(-1.f, -1.f, -1.f),
         .diffuse = glm::vec3(0.2f),
@@ -54,9 +53,15 @@ void Application::run() {
     });
 
     scene.addPointLight("point", q3d::object::PointLight{
-        .position = glm::vec3(0.f, 3.f, 0.f),
-        // .linear = 0.007f,
-        // .quadratic = 0.0002f,
+        .position = glm::vec3(5.f, 3.f, 0.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
+    });
+
+    scene.addPointLight("point2", q3d::object::PointLight{
+        .position = glm::vec3(-5.f, 3.f, 0.f),
+        .linear = 0.007f,
+        .quadratic = 0.0002f,
     });
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
@@ -66,7 +71,6 @@ void Application::run() {
 
     scene["box"]->material = res->getMaterial("default");
     scene["plane"]->material = res->getMaterial("default");
-    scene["plane"]->castShadows = false;
 
     cam->setPosition(glm::vec3(0.f, 1.5f, 5.f));
 
