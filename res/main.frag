@@ -227,7 +227,7 @@ void main() {
     for (int i = 0; i < pointLights.length(); i++) {
         float shadow = calcPointShadow(vFragPos, pointLights[i].position, norm, i);
 
-        result += calcPointLight(pointLights[i], norm, vFragPos, viewDir, texColor, 0.0);
+        result += calcPointLight(pointLights[i], norm, vFragPos, viewDir, texColor, shadow);
     }
 
     FragColor = vec4(result, 1.0);

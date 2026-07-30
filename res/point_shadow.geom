@@ -1,7 +1,7 @@
 #version 430 core
 
 layout (triangles) in;
-layout (triangles_strip, max_vertices = 18) out;
+layout (triangle_strip, max_vertices = 18) out;
 
 uniform mat4 u_lightSpaceMatrices[6];
 uniform int u_lightIndex;
