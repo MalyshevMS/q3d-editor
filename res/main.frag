@@ -57,6 +57,9 @@ struct SpotLight {
 
 uniform sampler2D u_texture;
 uniform sampler2DArray u_shadowMap;
+uniform samplerCubeArray u_cubeMap;
+uniform float u_farPlane = 100.f;
+
 uniform Material u_material;
 uniform vec3 u_viewPos;
 
@@ -66,13 +69,14 @@ layout(std430, binding = 0) readonly buffer DirLightBuffer {
     DirLight dirLights[];
 };
 
-layout(std430, binding = 1) readonly buffer PointLightBuffer {
+layout(std430, binding = 1) readonly buffer SpotLightBuffer {
+    SpotLight spotLights[];
+};
+
+layout(std430, binding = 2) readonly buffer PointLightBuffer {
     PointLight pointLights[];
 };
 
-layout(std430, binding = 2) readonly buffer SpotLightBuffer {
-    SpotLight spotLights[];
-};
 
 layout(std430, binding = 3) readonly buffer LightSpaceMatrices {
     mat4 lightSpaceMatrices[];
@@ -95,6 +99,28 @@ float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int index) {
         0.0002 * (1.0 - dot(normal, lightDir)),
         0.00002
     );
+
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
+float calcPointShadow(vec3 fragPos, vec3 lightPos, vec3 normal, int index) {
+    vec3 fragToLight = fragPos - lightPos;
+
+    float closestDepth = texture(u_cubeMap, vec4(fragToLight, index)).r;
+
+    closestDepth *= u_farPlane;
+
+    float currentDepth = length(fragToLight);
+
+    vec3 lightDir = normalize(lightPos - fragPos);
+
+    float bias = max(
+        0.0002 * (1.0 - dot(normal, lightDir)),
+        0.00002
+    );
+
     float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     return shadow;
@@ -116,30 +142,6 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 texColor, floa
     vec3 specular = light.specular * (spec * u_material.specular);
 
     return ambient + (diffuse + specular) * (1.0 - shadow);
-}
-
-vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 texColor, float shadow) {
-    vec3 lightDir = normalize(light.position - fragPos);
-
-    // Ambient
-    vec3 ambient = light.ambient * u_material.ambient * texColor;
-
-    // Diffuse
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * (diff * u_material.diffuse) * texColor;
-
-    // Specular
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), u_material.shininess);
-    vec3 specular = light.specular * (spec * u_material.specular);
-
-    // Attenuation
-    float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (
-        light.constant + light.linear * distance + light.quadratic * distance * distance
-    );
-
-    return ambient + (diffuse + specular) * attenuation * (1.0 - shadow);
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 texColor, float shadow) {
@@ -171,6 +173,30 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
     return ambient + (diffuse + specular) * attenuation * intensity * (1.0 - shadow);
 }
 
+vec3 calcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 texColor, float shadow) {
+    vec3 lightDir = normalize(light.position - fragPos);
+
+    // Ambient
+    vec3 ambient = light.ambient * u_material.ambient * texColor;
+
+    // Diffuse
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = light.diffuse * (diff * u_material.diffuse) * texColor;
+
+    // Specular
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), u_material.shininess);
+    vec3 specular = light.specular * (spec * u_material.specular);
+
+    // Attenuation
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0 / (
+        light.constant + light.linear * distance + light.quadratic * distance * distance
+    );
+
+    return ambient + (diffuse + specular) * attenuation * (1.0 - shadow);
+}
+
 void main() {
     vec3 norm = normalize(vNormal);
     vec3 viewDir = normalize(u_viewPos - vFragPos);
@@ -199,6 +225,8 @@ void main() {
 
     // Point
     for (int i = 0; i < pointLights.length(); i++) {
+        float shadow = calcPointShadow(vFragPos, pointLights[i].position, norm, i);
+
         result += calcPointLight(pointLights[i], norm, vFragPos, viewDir, texColor, 0.0);
     }
 
