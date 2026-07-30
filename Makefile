@@ -8,7 +8,7 @@ all: build
 
 build:
 	@cmake -B $(BUILD_DIR) -S .
-	@cmake --build $(BUILD_DIR)
+	@cmake --build $(BUILD_DIR) -j4
 
 run: build
 	@if [ -f $(TARGET_BIN) ]; then \
