@@ -44,9 +44,10 @@ void Application::run() {
     scene.add("custom", res->getModel("sphere"));
 
     scene.addDirLight("sun", q3d::object::DirLight(res->getShader("light"), q3d::phys::Transform{
-        glm::vec3(5.f),
-        glm::vec3(45.f, 0.f, 45.f)
+        glm::vec3(5.f)
     }));
+
+    scene.getDirLight("sun")->properties.color = q3d::core::Color::Blue;
 
     scene.addSpotLight("spot", q3d::object::SpotLightInternal{
         .position = glm::vec3(0.f, 5.f, 0.f),
