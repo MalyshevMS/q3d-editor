@@ -60,6 +60,9 @@ uniform sampler2DArray u_shadowMap;
 uniform samplerCubeArray u_cubeMap;
 uniform float u_farPlane = 100.f;
 
+uniform float u_bias1 = 0.0005;
+uniform float u_bias2 = 0.00005;
+
 uniform Material u_material;
 uniform vec3 u_viewPos;
 
@@ -96,8 +99,8 @@ float calcShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int index) {
     float currentDepth = projCoords.z;
 
     float bias = max(
-        0.0002 * (1.0 - dot(normal, lightDir)),
-        0.00002
+        u_bias1 * (1.0 - dot(normal, lightDir)),
+        u_bias2
     );
 
     float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
@@ -117,8 +120,8 @@ float calcPointShadow(vec3 fragPos, vec3 lightPos, vec3 normal, int index) {
     vec3 lightDir = normalize(lightPos - fragPos);
 
     float bias = max(
-        0.0002 * (1.0 - dot(normal, lightDir)),
-        0.00002
+        u_bias1 * (1.0 - dot(normal, lightDir)),
+        u_bias2
     );
 
     float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;

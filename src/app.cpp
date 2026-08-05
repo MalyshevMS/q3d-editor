@@ -30,7 +30,7 @@ void Application::run() {
     res->loadShader("point_shadow", "res/point_shadow.vert", "res/point_shadow.frag", "res/point_shadow.geom");
     res->loadTexture("box", "res/box.png");
     res->loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
-    res->loadFont("default", "res/font.ttf", 40);
+    res->loadFont("default", "/usr/share/fonts/TTF/Impact.TTF", 40);
     res->loadMaterial("default", "res/default.json");
     res->loadModel("sphere", "res/sphere.obj", res->getShader("object"), res->getTexture("grass"));
 
@@ -41,13 +41,10 @@ void Application::run() {
 
     scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
+    scene.create<q3d::object::Plane>("plane2", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
     scene.add("custom", res->getModel("sphere"));
 
-    scene.addDirLight("sun", q3d::object::DirLight(res->getShader("light"), q3d::phys::Transform{
-        glm::vec3(5.f)
-    }));
-
-    scene.getDirLight("sun")->properties.color = q3d::core::Color::Blue;
+    scene.addDirLight("sun", q3d::object::DirLight(res->getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
 
     scene.addSpotLight("spot", q3d::object::SpotLightInternal{
         .position = glm::vec3(0.f, 5.f, 0.f),
@@ -64,6 +61,8 @@ void Application::run() {
     scene["box"]->material = res->getMaterial("default");
     scene["plane"]->material = res->getMaterial("default");
     scene["custom"]->material = res->getMaterial("default");
+
+    scene["custom"]->transform.position = glm::vec3(5.f, 0.f, -5.f);
 
     cam->setPosition(glm::vec3(0.f, 1.5f, 5.f));
 
@@ -83,6 +82,9 @@ void Application::run() {
 
     auto lastPos = targetPos;
     auto lastRot = targetRot;
+
+    float bias1 = 0.02f;
+    float bias2 = 0.0001f;
 
     while (window.isOpen()) {
         // CPU (math)
@@ -105,19 +107,29 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::E)) moveOffset.y += targetMoveStep;
         if (window.isKeyPressed(q3d::key::Q)) moveOffset.y -= targetMoveStep;
 
-        if (window.isKeyPressed(q3d::key::O)) scene["custom"]->transform.position.y += dt * 5;
-        if (window.isKeyPressed(q3d::key::U)) scene["custom"]->transform.position.y -= dt * 5;
-        if (window.isKeyPressed(q3d::key::I)) scene["custom"]->transform.position.z -= dt * 5;
-        if (window.isKeyPressed(q3d::key::K)) scene["custom"]->transform.position.z += dt * 5;
-        if (window.isKeyPressed(q3d::key::J)) scene["custom"]->transform.position.x -= dt * 5;
-        if (window.isKeyPressed(q3d::key::L)) scene["custom"]->transform.position.x += dt * 5;
+        if (window.isKeyPressed(q3d::key::O)) scene["plane2"]->transform.position.y += dt * 5;
+        if (window.isKeyPressed(q3d::key::U)) scene["plane2"]->transform.position.y -= dt * 5;
+        if (window.isKeyPressed(q3d::key::I)) scene["plane2"]->transform.position.z -= dt * 5;
+        if (window.isKeyPressed(q3d::key::K)) scene["plane2"]->transform.position.z += dt * 5;
+        if (window.isKeyPressed(q3d::key::J)) scene["plane2"]->transform.position.x -= dt * 5;
+        if (window.isKeyPressed(q3d::key::L)) scene["plane2"]->transform.position.x += dt * 5;
 
-        if (window.isKeyPressed(q3d::key::F)) scene["custom"]->transform.rotation.y += dt * 60;
-        if (window.isKeyPressed(q3d::key::H)) scene["custom"]->transform.rotation.y -= dt * 60;
-        if (window.isKeyPressed(q3d::key::R)) scene["custom"]->transform.rotation.z += dt * 60;
-        if (window.isKeyPressed(q3d::key::Y)) scene["custom"]->transform.rotation.z -= dt * 60;
-        if (window.isKeyPressed(q3d::key::T)) scene["custom"]->transform.rotation.x += dt * 60;
-        if (window.isKeyPressed(q3d::key::G)) scene["custom"]->transform.rotation.x -= dt * 60;
+        if (window.isKeyPressed(q3d::key::F)) scene["plane2"]->transform.rotation.y += dt * 60;
+        if (window.isKeyPressed(q3d::key::H)) scene["plane2"]->transform.rotation.y -= dt * 60;
+        if (window.isKeyPressed(q3d::key::R)) scene["plane2"]->transform.rotation.z += dt * 60;
+        if (window.isKeyPressed(q3d::key::Y)) scene["plane2"]->transform.rotation.z -= dt * 60;
+        if (window.isKeyPressed(q3d::key::T)) scene["plane2"]->transform.rotation.x += dt * 60;
+        if (window.isKeyPressed(q3d::key::G)) scene["plane2"]->transform.rotation.x -= dt * 60;
+
+        if (window.isKeyPressed(q3d::key::X)) bias1 += 0.001f * dt;
+        if (window.isKeyPressed(q3d::key::Z)) bias1 -= 0.001f * dt;
+        if (window.isKeyPressed(q3d::key::V)) bias2 += 0.001f * dt;
+        if (window.isKeyPressed(q3d::key::C)) bias2 -= 0.001f * dt;
+
+        if (window.isKeyPressed(q3d::key::UP))    scene.getDirLight("sun")->transform.position.x += 5 * dt;
+        if (window.isKeyPressed(q3d::key::DOWN))  scene.getDirLight("sun")->transform.position.x -= 5 * dt;
+        if (window.isKeyPressed(q3d::key::RIGHT)) scene.getDirLight("sun")->transform.position.z += 5 * dt;
+        if (window.isKeyPressed(q3d::key::LEFT))  scene.getDirLight("sun")->transform.position.z -= 5 * dt;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();
@@ -166,10 +178,12 @@ FPS: {:.2f}
 DT: {:.4f}
 Position: {:.2f}; {:.2f}; {:.2f}
 Rotation: {:.2f}; {:.2f}; {:.2f}
+Bias: {}; {}
             )",
             1 / dt, dt,
             cam->getPosition().x, cam->getPosition().y, cam->getPosition().z,
-            cam->getRotation().x, cam->getRotation().y, cam->getRotation().z
+            cam->getRotation().x, cam->getRotation().y, cam->getRotation().z,
+            bias1, bias2
         ));
 
         // GPU
@@ -179,6 +193,9 @@ Rotation: {:.2f}; {:.2f}; {:.2f}
         q3d::gl::clearColor(q3d::core::Color::Gray);
         q3d::gl::clear();
 
+        res->getShader("object")->use();
+        res->getShader("object")->uniform("u_bias1", bias1);
+        res->getShader("object")->uniform("u_bias2", bias2);
         scene.render();
 
         fbo.unbind();
