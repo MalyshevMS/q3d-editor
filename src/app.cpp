@@ -45,13 +45,15 @@ void Application::run() {
     scene.add("custom", res->getModel("sphere"));
 
     scene.addDirLight("sun", q3d::object::DirLight(res->getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
+    scene.getDirLight("sun")->properties.diffuse = 0.3f;
 
-    scene.addSpotLight("spot", q3d::object::SpotLightInternal{
-        .position = glm::vec3(0.f, 5.f, 0.f),
-        .direction = glm::vec3(0.f, -1.f, 0.f),
-        .linear = 0.007f,
-        .quadratic = 0.0002f,
-    });
+    scene.addSpotLight("spot", q3d::object::SpotLight(res->getShader("light")));
+
+    auto l = scene.getSpotLight("spot");
+    l->linear = 0.007f;
+    l->quadratic = 0.0002f;
+    l->transform.position = glm::vec3(0.f, 5.f, 0.f);
+    l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
@@ -95,9 +97,8 @@ void Application::run() {
         glm::vec3 moveOffset(0.f);
 
         if (window.isKeyPressed(q3d::key::SPACE)) {
-            auto dir = -glm::vec3(glm::inverse(cam->getView())[2]);
-            scene.getSpotLight("spot")->direction = glm::normalize(dir);
-            scene.getSpotLight("spot")->position = cam->getPosition();
+            scene.getSpotLight("spot")->transform.rotation = cam->getRotation();
+            scene.getSpotLight("spot")->transform.position = cam->getPosition() - 5.f * glm::vec3(glm::transpose(cam->getView())[2]);
         }
 
         if (window.isKeyPressed(q3d::key::W)) moveOffset.z += targetMoveStep;
@@ -107,29 +108,29 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::E)) moveOffset.y += targetMoveStep;
         if (window.isKeyPressed(q3d::key::Q)) moveOffset.y -= targetMoveStep;
 
-        if (window.isKeyPressed(q3d::key::O)) scene["plane2"]->transform.position.y += dt * 5;
-        if (window.isKeyPressed(q3d::key::U)) scene["plane2"]->transform.position.y -= dt * 5;
-        if (window.isKeyPressed(q3d::key::I)) scene["plane2"]->transform.position.z -= dt * 5;
-        if (window.isKeyPressed(q3d::key::K)) scene["plane2"]->transform.position.z += dt * 5;
-        if (window.isKeyPressed(q3d::key::J)) scene["plane2"]->transform.position.x -= dt * 5;
-        if (window.isKeyPressed(q3d::key::L)) scene["plane2"]->transform.position.x += dt * 5;
+        if (window.isKeyPressed(q3d::key::O)) scene["box"]->transform.position.y += dt * 5;
+        if (window.isKeyPressed(q3d::key::U)) scene["box"]->transform.position.y -= dt * 5;
+        if (window.isKeyPressed(q3d::key::I)) scene["box"]->transform.position.z -= dt * 5;
+        if (window.isKeyPressed(q3d::key::K)) scene["box"]->transform.position.z += dt * 5;
+        if (window.isKeyPressed(q3d::key::J)) scene["box"]->transform.position.x -= dt * 5;
+        if (window.isKeyPressed(q3d::key::L)) scene["box"]->transform.position.x += dt * 5;
 
-        if (window.isKeyPressed(q3d::key::F)) scene["plane2"]->transform.rotation.y += dt * 60;
-        if (window.isKeyPressed(q3d::key::H)) scene["plane2"]->transform.rotation.y -= dt * 60;
-        if (window.isKeyPressed(q3d::key::R)) scene["plane2"]->transform.rotation.z += dt * 60;
-        if (window.isKeyPressed(q3d::key::Y)) scene["plane2"]->transform.rotation.z -= dt * 60;
-        if (window.isKeyPressed(q3d::key::T)) scene["plane2"]->transform.rotation.x += dt * 60;
-        if (window.isKeyPressed(q3d::key::G)) scene["plane2"]->transform.rotation.x -= dt * 60;
+        if (window.isKeyPressed(q3d::key::F)) scene["box"]->transform.rotation.y += dt * 60;
+        if (window.isKeyPressed(q3d::key::H)) scene["box"]->transform.rotation.y -= dt * 60;
+        if (window.isKeyPressed(q3d::key::R)) scene["box"]->transform.rotation.z += dt * 60;
+        if (window.isKeyPressed(q3d::key::Y)) scene["box"]->transform.rotation.z -= dt * 60;
+        if (window.isKeyPressed(q3d::key::T)) scene["box"]->transform.rotation.x += dt * 60;
+        if (window.isKeyPressed(q3d::key::G)) scene["box"]->transform.rotation.x -= dt * 60;
 
         if (window.isKeyPressed(q3d::key::X)) bias1 += 0.001f * dt;
         if (window.isKeyPressed(q3d::key::Z)) bias1 -= 0.001f * dt;
         if (window.isKeyPressed(q3d::key::V)) bias2 += 0.001f * dt;
         if (window.isKeyPressed(q3d::key::C)) bias2 -= 0.001f * dt;
 
-        if (window.isKeyPressed(q3d::key::UP))    scene.getDirLight("sun")->transform.position.x += 5 * dt;
-        if (window.isKeyPressed(q3d::key::DOWN))  scene.getDirLight("sun")->transform.position.x -= 5 * dt;
-        if (window.isKeyPressed(q3d::key::RIGHT)) scene.getDirLight("sun")->transform.position.z += 5 * dt;
-        if (window.isKeyPressed(q3d::key::LEFT))  scene.getDirLight("sun")->transform.position.z -= 5 * dt;
+        if (window.isKeyPressed(q3d::key::UP))    scene.getSpotLight("spot")->transform.position.x += 5 * dt;
+        if (window.isKeyPressed(q3d::key::DOWN))  scene.getSpotLight("spot")->transform.position.x -= 5 * dt;
+        if (window.isKeyPressed(q3d::key::RIGHT)) scene.getSpotLight("spot")->transform.position.z += 5 * dt;
+        if (window.isKeyPressed(q3d::key::LEFT))  scene.getSpotLight("spot")->transform.position.z -= 5 * dt;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();
