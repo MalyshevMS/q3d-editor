@@ -56,13 +56,13 @@ vec3 applyColorCorrection(vec3 baseColor) {
 }
 
 void main() {
-    vec3 color = applyMotionBlur(TexCoords);
+    // vec3 color = applyMotionBlur(TexCoords);
+    //
+    // // color = applyChromaticAberration(TexCoords, color);
+    //
+    // color = applyVignette(TexCoords, color);
+    //
+    // color = applyColorCorrection(color);
 
-    // color = applyChromaticAberration(TexCoords, color);
-
-    color = applyVignette(TexCoords, color);
-
-    color = applyColorCorrection(color);
-
-    FragColor = vec4(color, 1.0);
+    FragColor = texture(u_texture, TexCoords);
 }

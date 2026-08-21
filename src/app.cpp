@@ -49,6 +49,8 @@ void Application::run() {
 
     scene.addSpotLight("spot", q3d::object::SpotLight(res->getShader("light")));
 
+    scene.addPointLight("point", q3d::object::PointLight(res->getShader("light")));
+
     auto l = scene.getSpotLight("spot");
     l->linear = 0.007f;
     l->quadratic = 0.0002f;
@@ -97,8 +99,8 @@ void Application::run() {
         glm::vec3 moveOffset(0.f);
 
         if (window.isKeyPressed(q3d::key::SPACE)) {
-            scene.getSpotLight("spot")->transform.rotation = cam->getRotation();
-            scene.getSpotLight("spot")->transform.position = cam->getPosition() - 5.f * glm::vec3(glm::transpose(cam->getView())[2]);
+            // scene.getSpotLight("spot")->transform.rotation = cam->getRotation();
+            scene.getPointLight("point")->transform.position = cam->getPosition() - 5.f * glm::vec3(glm::transpose(cam->getView())[2]);
         }
 
         if (window.isKeyPressed(q3d::key::W)) moveOffset.z += targetMoveStep;
@@ -127,10 +129,10 @@ void Application::run() {
         if (window.isKeyPressed(q3d::key::V)) bias2 += 0.001f * dt;
         if (window.isKeyPressed(q3d::key::C)) bias2 -= 0.001f * dt;
 
-        if (window.isKeyPressed(q3d::key::UP))    scene.getSpotLight("spot")->transform.position.x += 5 * dt;
-        if (window.isKeyPressed(q3d::key::DOWN))  scene.getSpotLight("spot")->transform.position.x -= 5 * dt;
-        if (window.isKeyPressed(q3d::key::RIGHT)) scene.getSpotLight("spot")->transform.position.z += 5 * dt;
-        if (window.isKeyPressed(q3d::key::LEFT))  scene.getSpotLight("spot")->transform.position.z -= 5 * dt;
+        if (window.isKeyPressed(q3d::key::UP))    scene.getPointLight("point")->transform.position.x += 5 * dt;
+        if (window.isKeyPressed(q3d::key::DOWN))  scene.getPointLight("point")->transform.position.x -= 5 * dt;
+        if (window.isKeyPressed(q3d::key::RIGHT)) scene.getPointLight("point")->transform.position.z += 5 * dt;
+        if (window.isKeyPressed(q3d::key::LEFT))  scene.getPointLight("point")->transform.position.z -= 5 * dt;
 
         if (moveOffset != glm::vec3(0.f)) {
             glm::vec3 oldPos = cam->getPosition();
