@@ -5,9 +5,8 @@
 #include <q3d/gl/fbo.hpp>
 #include <q3d/log/log.hpp>
 
-Application::Application(std::string_view argv0)
- : window("q3d editor", { 1280, 720 }), res(nullptr) {
-    res = q3d::Resources::getInstance(argv0);
+Application::Application()
+ : window("q3d editor", { 1280, 720 }) {
     cam = std::make_shared<q3d::core::Camera>(window.getAspectRatio(), 90.f);
     q3d::core::ActiveCamera::set(cam);
 
@@ -22,34 +21,34 @@ void Application::run() {
     q3d::ui::Canvas canvas(window.getSize());
     q3d::Screen screen;
 
-    res->loadShader("object", "res/main.vert", "res/main.frag");
-    res->loadShader("text", "res/text.vert", "res/text.frag");
-    res->loadShader("post", "res/post.vert", "res/post.frag");
-    res->loadShader("depth", "res/depth.vert", "res/depth.frag");
-    res->loadShader("light", "res/light.vert", "res/light.frag");
-    res->loadShader("point_shadow", "res/point_shadow.vert", "res/point_shadow.frag", "res/point_shadow.geom");
-    res->loadTexture("box", "res/box.png");
-    res->loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
-    res->loadFont("default", "/usr/share/fonts/TTF/Impact.TTF", 40);
-    res->loadMaterial("default", "res/default.json");
-    res->loadModel("sphere", "res/sphere.obj", res->getShader("object"), res->getTexture("grass"));
+    res.loadShader("object", "res/main.vert", "res/main.frag");
+    res.loadShader("text", "res/text.vert", "res/text.frag");
+    res.loadShader("post", "res/post.vert", "res/post.frag");
+    res.loadShader("depth", "res/depth.vert", "res/depth.frag");
+    res.loadShader("light", "res/light.vert", "res/light.frag");
+    res.loadShader("point_shadow", "res/point_shadow.vert", "res/point_shadow.frag", "res/point_shadow.geom");
+    res.loadTexture("box", "res/box.png");
+    res.loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
+    res.loadFont("default", "/usr/share/fonts/TTF/Impact.TTF", 40);
+    res.loadMaterial("default", "res/default.json");
+    res.loadModel("sphere", "res/sphere.obj", "object", "grass");
 
-    screen.setShader(res->getShader("post"));
+    screen.setShader(res.getShader("post"));
 
-    scene.initShadows(res->getShader("depth"));
-    scene.initPointShadows(res->getShader("point_shadow"));
+    scene.initShadows(res.getShader("depth"));
+    scene.initPointShadows(res.getShader("point_shadow"));
 
-    scene.create<q3d::object::Box>("box", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform{});
-    scene.create<q3d::object::Plane>("plane", res->getShader("object"), res->getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
-    scene.create<q3d::object::Plane>("plane2", res->getShader("object"), res->getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
-    scene.add("custom", res->getModel("sphere"));
+    scene.create<q3d::object::Box>("box", res.getShader("object"), res.getTexture("box"), q3d::phys::Transform{});
+    scene.create<q3d::object::Plane>("plane", res.getShader("object"), res.getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
+    scene.create<q3d::object::Plane>("plane2", res.getShader("object"), res.getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
+    scene.add("custom", res.getModel("sphere"));
 
-    scene.addDirLight("sun", q3d::object::DirLight(res->getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
+    scene.addDirLight("sun", q3d::object::DirLight(res.getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
     scene.getDirLight("sun")->properties.diffuse = 0.3f;
 
-    scene.addSpotLight("spot", q3d::object::SpotLight(res->getShader("light")));
+    scene.addSpotLight("spot", q3d::object::SpotLight(res.getShader("light")));
 
-    scene.addPointLight("point", q3d::object::PointLight(res->getShader("light")));
+    scene.addPointLight("point", q3d::object::PointLight(res.getShader("light")));
 
     auto l = scene.getSpotLight("spot");
     l->linear = 0.007f;
@@ -57,14 +56,14 @@ void Application::run() {
     l->transform.position = glm::vec3(0.f, 5.f, 0.f);
     l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
-    auto debug = canvas.create<q3d::ui::Text>("debug", res->getShader("text"), res->getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
+    auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
 
-    scene["box"]->material = res->getMaterial("default");
-    scene["plane"]->material = res->getMaterial("default");
-    scene["custom"]->material = res->getMaterial("default");
+    scene["box"]->material = res.getMaterial("default");
+    scene["plane"]->material = res.getMaterial("default");
+    scene["custom"]->material = res.getMaterial("default");
 
     scene["custom"]->transform.position = glm::vec3(5.f, 0.f, -5.f);
 
@@ -196,14 +195,14 @@ Bias: {}; {}
         q3d::gl::clearColor(q3d::core::Color::Gray);
         q3d::gl::clear();
 
-        res->getShader("object")->use();
-        res->getShader("object")->uniform("u_bias1", bias1);
-        res->getShader("object")->uniform("u_bias2", bias2);
+        res.getShader("object")->use();
+        res.getShader("object")->uniform("u_bias1", bias1);
+        res.getShader("object")->uniform("u_bias2", bias2);
         scene.render();
 
         fbo.unbind();
 
-        auto post = res->getShader("post");
+        auto post = res.getShader("post");
         post->use();
         post->uniform("u_blurVector", blurVector);
         post->uniform("u_blurForward", blurForward);

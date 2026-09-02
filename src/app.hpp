@@ -9,9 +9,9 @@ class Application {
 private:
     q3d::Window window;
     q3d::ptr<q3d::core::Camera> cam;
-    q3d::Resources* res;
+    q3d::ResourceManager res;
 public:
-    Application(std::string_view argv0);
+    Application();
 
     void run();
     ~Application();

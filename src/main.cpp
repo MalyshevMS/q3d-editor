@@ -1,8 +1,8 @@
 #include "app.hpp"
 
 int main(int argc, char const *argv[]) {
-    Application app(argv[0]);
+    Application app;
     app.run();
-    
+
     return 0;
 }
