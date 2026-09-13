@@ -10,9 +10,6 @@ Application::Application()
     cam = std::make_shared<q3d::core::Camera>(window.getAspectRatio(), 90.f);
     q3d::core::ActiveCamera::set(cam);
 
-    window.setVSync(false);
-    window.fpsMax(1000);
-
     cam->setFar(1000.f);
 }
 
