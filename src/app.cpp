@@ -218,5 +218,6 @@ Bias: {}; {}
 }
 
 Application::~Application() {
+    res.clear();
     q3d::Window::terminate();
 }
