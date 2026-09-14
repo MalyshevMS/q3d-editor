@@ -18,14 +18,14 @@ void Application::run() {
     q3d::ui::Canvas canvas(window.getSize());
     q3d::Screen screen;
 
+    res.load("res/pak001.q3d.tar.zst");
+
     res.loadShader("object", "res/main.vert", "res/main.frag");
     res.loadShader("text", "res/text.vert", "res/text.frag");
     res.loadShader("post", "res/post.vert", "res/post.frag");
     res.loadShader("depth", "res/depth.vert", "res/depth.frag");
     res.loadShader("light", "res/light.vert", "res/light.frag");
     res.loadShader("point_shadow", "res/point_shadow.vert", "res/point_shadow.frag", "res/point_shadow.geom");
-    res.loadTexture("box", "res/box.png");
-    res.loadTexture("grass", "res/grass.png")->uv = glm::vec2(200.f, 200.f);
     res.loadFont("default", "/usr/share/fonts/TTF/Impact.TTF", 40);
     res.loadMaterial("default", "res/default.json");
     res.loadModel("sphere", "res/sphere.obj", "object", "grass");
