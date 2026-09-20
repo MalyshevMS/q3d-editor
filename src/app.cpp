@@ -19,25 +19,18 @@ void Application::run() {
     q3d::Screen screen;
 
     res.load("res/pak001.q3d.tar.zst");
+    res.getTexture("grass")->uv = { 100.f, 100.f };
 
-    res.loadShader("object", "res/main.vert", "res/main.frag");
-    res.loadShader("text", "res/text.vert", "res/text.frag");
-    res.loadShader("post", "res/post.vert", "res/post.frag");
-    res.loadShader("depth", "res/depth.vert", "res/depth.frag");
-    res.loadShader("light", "res/light.vert", "res/light.frag");
-    res.loadShader("point_shadow", "res/point_shadow.vert", "res/point_shadow.frag", "res/point_shadow.geom");
-    res.loadFont("default", "/usr/share/fonts/TTF/Impact.TTF", 40);
-    res.loadMaterial("default", "res/default.json");
-    res.loadModel("sphere", "res/sphere.obj", "object", "grass");
+    res.loadModel("sphere", "res/sphere.obj", "main", "grass");
 
     screen.setShader(res.getShader("post"));
 
     scene.initShadows(res.getShader("depth"));
     scene.initPointShadows(res.getShader("point_shadow"));
 
-    scene.create<q3d::object::Box>("box", res.getShader("object"), res.getTexture("box"), q3d::phys::Transform{});
-    scene.create<q3d::object::Plane>("plane", res.getShader("object"), res.getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
-    scene.create<q3d::object::Plane>("plane2", res.getShader("object"), res.getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
+    scene.create<q3d::object::Box>("box", res.getShader("main"), res.getTexture("box"), q3d::phys::Transform{});
+    scene.create<q3d::object::Plane>("plane", res.getShader("main"), res.getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
+    scene.create<q3d::object::Plane>("plane2", res.getShader("main"), res.getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
     scene.add("custom", res.getModel("sphere"));
 
     scene.addDirLight("sun", q3d::object::DirLight(res.getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
@@ -53,7 +46,7 @@ void Application::run() {
     l->transform.position = glm::vec3(0.f, 5.f, 0.f);
     l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
-    auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("default"), "", q3d::phys::Transform{}, q3d::core::Color::White);
+    auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("impact"), "", q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
@@ -192,9 +185,9 @@ Bias: {}; {}
         q3d::gl::clearColor(q3d::core::Color::Gray);
         q3d::gl::clear();
 
-        res.getShader("object")->use();
-        res.getShader("object")->uniform("u_bias1", bias1);
-        res.getShader("object")->uniform("u_bias2", bias2);
+        res.getShader("main")->use();
+        res.getShader("main")->uniform("u_bias1", bias1);
+        res.getShader("main")->uniform("u_bias2", bias2);
         scene.render();
 
         fbo.unbind();
