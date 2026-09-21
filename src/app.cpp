@@ -46,7 +46,7 @@ void Application::run() {
     l->transform.position = glm::vec3(0.f, 5.f, 0.f);
     l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
-    auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("impact"), "", q3d::phys::Transform{}, q3d::core::Color::White);
+    auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("impact"), "", 40, q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;
     canvas["debug"]->transform.position.y = 40.f;
@@ -165,17 +165,17 @@ void Application::run() {
         lastPos = currentPos;
         lastRot = currentRot;
 
-        debug->setText(std::format(R"(
+    debug->setText(std::format(R"(
 FPS: {:.2f}
 DT: {:.4f}
 Position: {:.2f}; {:.2f}; {:.2f}
 Rotation: {:.2f}; {:.2f}; {:.2f}
 Bias: {}; {}
-            )",
-            1 / dt, dt,
-            cam->getPosition().x, cam->getPosition().y, cam->getPosition().z,
-            cam->getRotation().x, cam->getRotation().y, cam->getRotation().z,
-            bias1, bias2
+        )",
+        1 / dt, dt,
+        cam->getPosition().x, cam->getPosition().y, cam->getPosition().z,
+        cam->getRotation().x, cam->getRotation().y, cam->getRotation().z,
+        bias1, bias2
         ));
 
         // GPU

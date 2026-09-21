@@ -29,7 +29,7 @@ pack:
 	@if [ -d "$(RES_DIR)" ]; then \
 		echo "Упаковка $(RES_DIR) -> $(PAK_NAME).zst..."; \
 		tar -cvf $(PAK_NAME) -C $(RES_DIR) . > /dev/null ; \
-		zstd -f --rm $(PAK_NAME) -o $(PAK_NAME).zst > /dev/null ; \
+		zstd -q -f --rm $(PAK_NAME) -o $(PAK_NAME).zst; \
 		echo "Успешно упаковано в $(PAK_NAME).zst"; \
 	else \
 		echo "Ошибка: Директория $(RES_DIR) не найдена!"; \
