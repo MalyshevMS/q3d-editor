@@ -46,6 +46,8 @@ void Application::run() {
     l->transform.position = glm::vec3(0.f, 5.f, 0.f);
     l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
+    scene.getPointLight("point")->transform.position = glm::vec3(0.f, 0.f, -5.f);
+
     auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("impact"), "", 40, q3d::phys::Transform{}, q3d::core::Color::White);
 
     canvas["debug"]->transform.position.x = 10.f;
@@ -165,7 +167,7 @@ void Application::run() {
         lastPos = currentPos;
         lastRot = currentRot;
 
-    debug->setText(std::format(R"(
+        debug->setText(std::format(R"(
 FPS: {:.2f}
 DT: {:.4f}
 Position: {:.2f}; {:.2f}; {:.2f}
