@@ -19,6 +19,7 @@ void Application::run() {
     q3d::Screen screen;
 
     res.load("res/pak001.q3d.tar.zst");
+
     res.getTexture("grass")->uv = { 100.f, 100.f };
 
     screen.setShader(res.getShader("post"));
