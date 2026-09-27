@@ -1,0 +1,6 @@
+{
+    "mesh": "sphere",
+    "shader": "main",
+    "texture": "grass",
+    "material": "default"
+}

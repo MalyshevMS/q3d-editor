@@ -21,7 +21,8 @@ void Application::run() {
     res.load("res/pak001.q3d.tar.zst");
     res.getTexture("grass")->uv = { 100.f, 100.f };
 
-    res.loadModel("sphere", "res/sphere.obj", "main", "grass");
+    res.loadMesh("sphere", "res/sphere.obj");
+    res.loadPrefab("test", "res/test.mdl.json");
 
     screen.setShader(res.getShader("post"));
 
@@ -31,7 +32,7 @@ void Application::run() {
     scene.create<q3d::object::Box>("box", res.getShader("main"), res.getTexture("box"), q3d::phys::Transform{});
     scene.create<q3d::object::Plane>("plane", res.getShader("main"), res.getTexture("grass"), q3d::phys::Transform(glm::vec3(0.f, -3.f, 0.f), glm::vec3(-90.f, 0.f, 0.f), glm::vec3(100.f, 100.f, 100.f)));
     scene.create<q3d::object::Plane>("plane2", res.getShader("main"), res.getTexture("box"), q3d::phys::Transform(glm::vec3(5.f, 0.f, 0.f)));
-    scene.add("custom", res.getModel("sphere"));
+    scene.add("custom", res.createModel("test"));
 
     scene.addDirLight("sun", q3d::object::DirLight(res.getShader("light"), q3d::phys::Transform(glm::vec3(5.f))));
     scene.getDirLight("sun")->properties.diffuse = 0.3f;
@@ -46,7 +47,7 @@ void Application::run() {
     l->transform.position = glm::vec3(0.f, 5.f, 0.f);
     l->transform.rotation = glm::vec3(-90.f, 0.f, 0.f);
 
-    scene.getPointLight("point")->transform.position = glm::vec3(0.f, 0.f, -5.f);
+    scene.getPointLight("point")->transform.position = glm::vec3(0.f, 4.f, -5.f);
 
     auto debug = canvas.create<q3d::ui::Text>("debug", res.getShader("text"), res.getFont("impact"), "", 40, q3d::phys::Transform{}, q3d::core::Color::White);
 
